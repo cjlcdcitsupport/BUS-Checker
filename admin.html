@@ -79,7 +79,7 @@ input[type=text]:focus,input[type=password]:focus{border-color:var(--brand2);box
 .tabs{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:10px}
 .tabs button{padding:10px 16px;font-size:16px;border:1px solid #cfd6e4;background:#fff;color:var(--brand);border-radius:22px;cursor:pointer;font-family:inherit}
 .tabs button.on{background:var(--brand);color:#fff;border-color:var(--brand)}
-.live{font-size:13px;color:var(--muted);margin-bottom:10px}
+.livebar{font-size:13px;color:var(--muted);margin-bottom:10px}
 .dot{display:inline-block;width:9px;height:9px;border-radius:50%;background:#1e8e3e;margin-right:4px;animation:pl 1.4s infinite}
 @keyframes pl{50%{opacity:.25}}
 .seg{display:flex;gap:6px;margin-bottom:12px}.seg button{padding:8px 18px;border:1px solid #cfd6e4;background:#fff;border-radius:18px;font-size:15px;cursor:pointer;font-family:inherit}.seg button.on{background:var(--brand2);color:#fff;border-color:var(--brand2)}
@@ -92,7 +92,7 @@ input[type=text]:focus,input[type=password]:focus{border-color:var(--brand2);box
 .frm input,.frm select,#esearch{padding:9px 10px;font-size:15px;border:1px solid #cfd6e4;border-radius:8px;min-width:130px;width:auto}
 #esearch{width:100%}
 .tw{overflow:auto}table{width:100%;border-collapse:collapse}th,td{text-align:left;padding:8px 10px;border-bottom:1px solid #e6e9f0;white-space:nowrap;font-size:15px}th{color:var(--muted);font-size:13px;background:#f8f9fc;position:sticky;top:0}
-.bd{padding:2px 10px;border-radius:12px;font-size:13px}.bd.o{background:#e8f5ec;color:var(--ok)}.bd.a{background:#e3ebfa;color:var(--brand)}.bd.r{background:#eee;color:#777}
+.btn.danger{background:#fff;color:#D32F2F;border:1px solid #D32F2F}.bd{padding:2px 10px;border-radius:12px;font-size:13px}.bd.o{background:#e8f5ec;color:var(--ok)}.bd.a{background:#e3ebfa;color:var(--brand)}.bd.r{background:#eee;color:#777}
 .trip{background:#fff;border-radius:12px;padding:12px 14px;margin-bottom:8px;box-shadow:0 1px 3px #0001}
 .trip .h{display:flex;gap:10px;flex-wrap:wrap;align-items:center}.trip .h b{font-size:17px}
 .trip details{margin-top:6px}.trip summary{cursor:pointer;color:var(--brand2)}.trip a{color:var(--brand2)}
@@ -116,7 +116,7 @@ input[type=text]:focus,input[type=password]:focus{border-color:var(--brand2);box
   <div class="tabs" id="tabs">
    <button data-t="dash" class="on">📊 Dashboard</button><button data-t="rep">📋 รายงาน</button><button data-t="veh">🚌 รถ &amp; QR</button><button data-t="set">⚙️ ตั้งค่า</button>
   </div>
-  <div class="live"><span class="dot"></span> อัปเดตอัตโนมัติทุก 10 วินาที · ล่าสุด <b id="upd">-</b></div>
+  <div class="livebar"><span class="dot"></span> อัปเดตอัตโนมัติทุก 10 วินาที · ล่าสุด <b id="upd">-</b></div>
 
   <section id="t_dash">
    <div class="seg" id="rng"><button data-n="1" class="on">วันนี้</button><button data-n="7">7 วัน</button><button data-n="30">30 วัน</button></div>
@@ -382,12 +382,16 @@ function xl(){
 function isY(v){return String(v).toUpperCase()==='Y';}
 function renderVeh(){
   $('vehtab').innerHTML='<tr><th>รหัส</th><th>ทะเบียน</th><th>ประเภท</th><th>สาย</th><th>สถานะ</th><th></th></tr>'+VEHS.map(function(r){var v=r.v;
-    return '<tr><td>'+esc(v[0])+'</td><td><b>'+esc(v[2])+'</b></td><td>'+esc(v[1])+'</td><td>'+esc(v[3])+'</td><td>'+(isY(v[4])?'<span class="bd o">ใช้งาน</span>':'<span class="bd r">ปิด</span>')+'</td><td><button class="btn small" onclick="printQR(\''+esc(v[0])+'\')">QR</button> <button class="btn small ghost" onclick="tog(\'VEHICLES\',\''+esc(v[0])+'\','+(!isY(v[4]))+')">'+(isY(v[4])?'ปิด':'เปิด')+'</button></td></tr>';}).join('');
+    return '<tr><td>'+esc(v[0])+'</td><td><b>'+esc(v[2])+'</b></td><td>'+esc(v[1])+'</td><td>'+esc(v[3])+'</td><td>'+(isY(v[4])?'<span class="bd o">ใช้งาน</span>':'<span class="bd r">ปิด</span>')+'</td><td><button class="btn small" onclick="printQR(\''+esc(v[0])+'\')">QR</button> <button class="btn small ghost" onclick="tog(\'VEHICLES\',\''+esc(v[0])+'\','+(!isY(v[4]))+')">'+(isY(v[4])?'ปิด':'เปิด')+'</button> <button class="btn small danger" onclick="del(\'VEHICLES\',\''+esc(v[0])+'\',\''+esc(v[2]||v[0])+'\')">ลบ</button></td></tr>';}).join('');
 }
 function reloadVeh(){return getA({action:'admin_vehicles'}).then(function(r){if(r.ok){VEHS=r.rows;renderVeh();}});}
 function addVeh(){var id=g('vid');if(!id){toast('กรอกรหัสรถ');return;}
   post({action:'addVehicle',vehicleId:id,plate:g('vplate'),type:g('vtype'),route:g('vroute')}).then(function(r){if(!r.ok){toast(r.error);return;}toast('เพิ่มแล้ว');['vid','vplate','vtype','vroute'].forEach(function(k){$(k).value='';});reloadVeh();});}
 function tog(sheet,id,val){post({action:'setActive',sheet:sheet,id:id,active:val}).then(function(r){if(!r.ok){toast(r.error);return;}if(sheet==='VEHICLES')reloadVeh();else loadSettings();});}
+function del(sheet,id,label){
+  if(!confirm('ลบ "'+label+'" ถาวร?\nย้อนกลับไม่ได้ (ประวัติการเดินรถเดิมยังอยู่)\n\nถ้าแค่ไม่อยากให้ใช้งาน ให้กด "ปิด" แทน'))return;
+  post({action:'deleteItem',sheet:sheet,id:id}).then(function(r){if(!r.ok){toast(r.error);return;}toast('ลบแล้ว');if(sheet==='VEHICLES')reloadVeh();else loadSettings();});
+}
 function printQR(id){
   var list=VEHS.filter(function(r){return isY(r.v[4])&&(!id||r.v[0]===id);});
   if(!list.length){toast('ไม่มีรถ');return;}
@@ -399,12 +403,12 @@ function printQR(id){
 // ---- settings ----
 function loadSettings(){
   getA({action:'admin_rounds'}).then(function(r){if(!r.ok)return;RNDS=r.rows;
-    $('rtab').innerHTML='<tr><th>รอบ</th><th>สถานะ</th><th></th></tr>'+r.rows.map(function(x){var a=isY(x.v[3]);return '<tr><td><b>'+esc(x.v[1])+'</b></td><td>'+(a?'<span class="bd o">ใช้งาน</span>':'<span class="bd r">ปิด</span>')+'</td><td><button class="btn small ghost" onclick="tog(\'ROUNDS\',\''+esc(x.v[0])+'\','+(!a)+')">'+(a?'ปิด':'เปิด')+'</button></td></tr>';}).join('');});
+    $('rtab').innerHTML='<tr><th>รอบ</th><th>สถานะ</th><th></th></tr>'+r.rows.map(function(x){var a=isY(x.v[3]);return '<tr><td><b>'+esc(x.v[1])+'</b></td><td>'+(a?'<span class="bd o">ใช้งาน</span>':'<span class="bd r">ปิด</span>')+'</td><td><button class="btn small ghost" onclick="tog(\'ROUNDS\',\''+esc(x.v[0])+'\','+(!a)+')">'+(a?'ปิด':'เปิด')+'</button> <button class="btn small danger" onclick="del(\'ROUNDS\',\''+esc(x.v[0])+'\',\''+esc(x.v[1])+'\')">ลบ</button></td></tr>';}).join('');});
   getA({action:'admin_employees'}).then(function(r){if(!r.ok)return;EMPS=r.rows;renderEmp();});
 }
 function renderEmp(){var q=g('esearch').toLowerCase();
   $('etab').innerHTML='<tr><th>รหัส</th><th>ชื่อ</th><th>หน้าที่</th><th></th></tr>'+EMPS.filter(function(x){return !q||(x.v[0]+x.v[1]).toLowerCase().indexOf(q)>=0;}).slice(0,200).map(function(x){var a=isY(x.v[3]);
-    return '<tr><td>'+esc(x.v[0])+'</td><td>'+esc(x.v[1])+'</td><td>'+(x.v[2]==='DRIVER'?'พขร.':'พนักงาน')+'</td><td><button class="btn small ghost" onclick="tog(\'EMPLOYEES\',\''+esc(x.v[0])+'\','+(!a)+')">'+(a?'ปิด':'เปิด')+'</button></td></tr>';}).join('');}
+    return '<tr><td>'+esc(x.v[0])+'</td><td>'+esc(x.v[1])+'</td><td>'+(x.v[2]==='DRIVER'?'พขร.':'พนักงาน')+'</td><td><button class="btn small ghost" onclick="tog(\'EMPLOYEES\',\''+esc(x.v[0])+'\','+(!a)+')">'+(a?'ปิด':'เปิด')+'</button> <button class="btn small danger" onclick="del(\'EMPLOYEES\',\''+esc(x.v[0])+'\',\''+esc(x.v[1]||x.v[0])+'\')">ลบ</button></td></tr>';}).join('');}
 function addRound(){var n=g('rname');if(!n)return;post({action:'addRound',roundName:n}).then(function(r){if(!r.ok){toast(r.error);return;}$('rname').value='';loadSettings();toast('เพิ่มรอบแล้ว');});}
 function addEmp(){var id=g('eid');if(!id){toast('กรอกรหัส');return;}post({action:'addEmployee',employeeId:id,name:g('ename'),role:$('erole').value}).then(function(r){if(!r.ok){toast(r.error);return;}['eid','ename'].forEach(function(k){$(k).value='';});loadSettings();toast('เพิ่มแล้ว');});}
 
