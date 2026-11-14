@@ -1,427 +1,322 @@
 <!DOCTYPE html>
-<html lang="th">
-<head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Bus Checker Admin</title>
-<script src="https://cdn.jsdelivr.net/npm/qrcode-generator@1.4.4/qrcode.js"></script>
-<style>
-  :root { --brand:#1f3a68; --ok:#1e8e3e; --err:#c5221f; --bg:#f4f6fa; --card:#fff; --ink:#1d2433; --muted:#6b7385; }
-  * { box-sizing:border-box; }
-  body { margin:0; font-family:'Sarabun','Noto Sans Thai',system-ui,sans-serif; background:var(--bg); color:var(--ink); font-size:15px; }
-  header { background:var(--brand); color:#fff; padding:12px 18px; display:flex; justify-content:space-between; align-items:center; }
-  header h1 { font-size:18px; margin:0; }
-  main { max-width:1100px; margin:16px auto; padding:0 14px 40px; }
-  .card { background:var(--card); border-radius:12px; padding:16px; margin-bottom:14px; box-shadow:0 1px 3px #0001; }
-  .row { display:flex; justify-content:space-between; align-items:center; gap:10px; flex-wrap:wrap; }
-  h3 { margin:0 0 10px; font-size:16px; }
-  .form { display:flex; gap:8px; flex-wrap:wrap; align-items:flex-end; }
-  .form label { display:flex; flex-direction:column; font-size:13px; color:var(--muted); gap:4px; }
-  input, select { padding:9px 10px; font-size:15px; border:1px solid #cfd6e4; border-radius:8px; min-width:140px; }
-  button { padding:9px 14px; font-size:15px; border:0; border-radius:8px; background:var(--brand); color:#fff; cursor:pointer; }
-  button.ghost { background:#fff; color:var(--brand); border:1px solid var(--brand); }
-  button.small { padding:5px 10px; font-size:13px; }
-  button:disabled { opacity:.5; }
-  .tabs { display:flex; gap:8px; flex-wrap:wrap; margin-bottom:14px; }
-  .tabs button { background:#fff; color:var(--brand); border:1px solid #cfd6e4; }
-  .tabs button.on { background:var(--brand); color:#fff; }
-  .tab.hidden, .hidden { display:none; }
-  .table-wrap { overflow-x:auto; }
-  table { width:100%; border-collapse:collapse; }
-  th, td { text-align:left; padding:8px 10px; border-bottom:1px solid #e6e9f0; white-space:nowrap; }
-  th { color:var(--muted); font-weight:600; font-size:13px; background:#f8f9fc; }
-  td a { color:var(--brand); }
-  .msg { padding:10px 12px; border-radius:8px; margin-top:10px; }
-  .msg.ok { background:#e6f4ea; color:var(--ok); }
-  .msg.err { background:#fce8e6; color:var(--err); }
-  .toast { position:fixed; bottom:18px; left:50%; transform:translateX(-50%); background:#1d2433; color:#fff; padding:10px 16px; border-radius:8px; font-size:14px; }
-  #printArea { display:none; }
-  .qr-grid { display:grid; grid-template-columns:repeat(2,1fr); gap:10mm; }
-  .qr-card { border:2px solid #000; padding:8mm; text-align:center; break-inside:avoid; font-size:18pt; line-height:1.4; }
-  .qr-card img { width:110mm; height:110mm; display:block; margin:0 auto 4mm; }
-  .qr-card .plate { font-size:26pt; font-weight:700; }
-  @page { size:A4; margin:10mm; }
-  @media print {
-    body > *:not(#printArea) { display:none !important; }
-    #printArea { display:block !important; }
-  }
-</style>
-</head>
-<body>
+<html lang="th"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1"><title>Bus Checker Admin</title><script src="https://cdn.jsdelivr.net/npm/qrcode-generator@1.4.4/qrcode.js"></script><script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script><style>
+:root{--brand:#1f3a68;--brand2:#2f5aa3;--ok:#1e8e3e;--warn:#e0a800;--err:#c5221f;--bg:#f4f6fa;--ink:#1d2433;--muted:#6b7385;--line:#dbe2ef}
+*{box-sizing:border-box}
+body{margin:0;font-family:'Sarabun','Noto Sans Thai','Noto Sans Myanmar',system-ui,sans-serif;background:var(--bg);color:var(--ink);font-size:17px;line-height:1.55}
+body.lang-my{line-height:1.8}
+header{background:var(--brand);color:#fff;padding:10px 12px;display:flex;align-items:center;gap:10px;position:sticky;top:0;z-index:20}
+header h1{font-size:18px;margin:0;flex:1;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.back{color:#fff;text-decoration:none;background:#ffffff26;border:1px solid #ffffff55;border-radius:22px;padding:7px 14px;font-size:16px;white-space:nowrap;cursor:pointer;font-family:inherit}
+.langs{display:flex;gap:4px}
+.langs button{background:#ffffff1f;color:#fff;border:1px solid #ffffff55;border-radius:14px;padding:3px 10px;font-size:13px;white-space:nowrap;line-height:1.8;cursor:pointer}
+.langs button.on{background:#fff;color:var(--brand)}
+main{max-width:560px;margin:0 auto;padding:14px 14px 40px}
+.card{background:#fff;border-radius:16px;padding:16px;margin-bottom:14px;box-shadow:0 1px 4px #0001}
+.big{display:block;width:100%;padding:18px;font-size:21px;font-weight:700;border:0;border-radius:16px;background:var(--brand2);color:#fff;cursor:pointer;font-family:inherit;white-space:nowrap}
+.big.green{background:var(--ok)} .big.orange{background:#d9822b}
+.big:disabled{opacity:.5}
+.btn{padding:11px 16px;font-size:16px;border:0;border-radius:10px;background:var(--brand);color:#fff;cursor:pointer;font-family:inherit}
+.btn.ghost{background:#fff;color:var(--brand);border:1px solid var(--brand)}
+.btn.small{padding:5px 10px;font-size:13px}
+.hidden{display:none!important}
+label.f{display:block;font-weight:600;margin:12px 0 6px}
+input[type=text],input[type=password],input[type=date],select{width:100%;padding:13px;font-size:18px;border:2px solid #cfd6e4;border-radius:12px;font-family:inherit}
+.plate{font-size:34px;font-weight:800;color:var(--brand);line-height:1.2}
+.route{color:var(--muted);margin-bottom:8px}
+.chips{display:flex;flex-wrap:wrap;gap:8px;margin-top:6px}
+.chip{background:#e3ebfa;color:var(--brand);border-radius:20px;padding:4px 12px;font-size:15px;white-space:nowrap}
+.rounds{display:flex;gap:8px;flex-wrap:wrap}
+.rounds button{flex:1;min-width:90px;padding:14px 10px;font-size:19px;border:2px solid #cfd6e4;background:#fff;border-radius:12px;cursor:pointer;font-family:inherit;white-space:nowrap}
+.rounds button.on{background:var(--brand2);border-color:var(--brand2);color:#fff;font-weight:700}
+.warn{background:#fff7e0;border-left:5px solid var(--warn);padding:12px 14px;border-radius:0 10px 10px 0;margin-bottom:14px}
+.err{background:#fce8e6;color:var(--err);padding:12px 14px;border-radius:10px;margin-top:12px}
+.list button{display:block;width:100%;text-align:left;padding:14px;margin-bottom:8px;border:1px solid var(--line);background:#fff;border-radius:12px;font-size:17px;cursor:pointer;font-family:inherit}
+.list b{color:var(--brand)}
+.photo{display:flex;align-items:center;gap:12px}
+.photo img{width:84px;height:84px;object-fit:cover;border-radius:10px;border:1px solid var(--line)}
+#ov{position:fixed;inset:0;background:var(--ok);color:#fff;z-index:50;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;padding:24px}
+#ov .tick{font-size:96px;line-height:1}
+#ov h2{margin:8px 0;font-size:28px} #ov p{margin:4px 0;font-size:20px}
+#ov button{margin-top:24px;padding:14px 36px;font-size:20px;border:0;border-radius:30px;background:#fff;color:var(--ok);font-weight:700;cursor:pointer;font-family:inherit}
+.toast{position:fixed;bottom:18px;left:50%;transform:translateX(-50%);background:#1d2433;color:#fff;padding:10px 16px;border-radius:8px;font-size:15px;z-index:60}
+.muted{color:var(--muted)} a.lnk{color:var(--brand2);cursor:pointer;text-decoration:underline}
+.spin{text-align:center;padding:30px;color:var(--muted)}
 
-<header>
-  <h1>Bus Checker: Admin</h1>
-  <button id="btnLogout" class="ghost hidden">ออกจากระบบ</button>
-</header>
+.wide{max-width:1150px;margin:0 auto;padding:12px 14px 50px}
+.tabs{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:10px}
+.tabs button{padding:10px 16px;font-size:16px;border:1px solid #cfd6e4;background:#fff;color:var(--brand);border-radius:22px;cursor:pointer;font-family:inherit}
+.tabs button.on{background:var(--brand);color:#fff;border-color:var(--brand)}
+.live{font-size:13px;color:var(--muted);margin-bottom:10px}
+.dot{display:inline-block;width:9px;height:9px;border-radius:50%;background:#1e8e3e;margin-right:4px;animation:pl 1.4s infinite}
+@keyframes pl{50%{opacity:.25}}
+.seg{display:flex;gap:6px;margin-bottom:12px}.seg button{padding:8px 18px;border:1px solid #cfd6e4;background:#fff;border-radius:18px;font-size:15px;cursor:pointer;font-family:inherit}.seg button.on{background:var(--brand2);color:#fff;border-color:var(--brand2)}
+.kpis{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:10px;margin-bottom:12px}
+.kpi{background:#fff;border-radius:14px;padding:12px 14px;box-shadow:0 1px 4px #0001}.kpi b{display:block;font-size:30px;color:var(--brand);line-height:1.2}.kpi span{font-size:13px;color:var(--muted)}
+.grid2{display:grid;grid-template-columns:repeat(auto-fit,minmax(380px,1fr));gap:12px}
+.ch{position:relative;height:280px}
+.card h3{margin:0 0 8px;font-size:16px}
+.frm{display:flex;gap:8px;flex-wrap:wrap;align-items:flex-end}.frm label{display:flex;flex-direction:column;font-size:13px;color:var(--muted);gap:4px}
+.frm input,.frm select,#esearch{padding:9px 10px;font-size:15px;border:1px solid #cfd6e4;border-radius:8px;min-width:130px;width:auto}
+#esearch{width:100%}
+.tw{overflow:auto}table{width:100%;border-collapse:collapse}th,td{text-align:left;padding:8px 10px;border-bottom:1px solid #e6e9f0;white-space:nowrap;font-size:15px}th{color:var(--muted);font-size:13px;background:#f8f9fc;position:sticky;top:0}
+.bd{padding:2px 10px;border-radius:12px;font-size:13px}.bd.o{background:#e8f5ec;color:var(--ok)}.bd.a{background:#e3ebfa;color:var(--brand)}.bd.r{background:#eee;color:#777}
+.trip{background:#fff;border-radius:12px;padding:12px 14px;margin-bottom:8px;box-shadow:0 1px 3px #0001}
+.trip .h{display:flex;gap:10px;flex-wrap:wrap;align-items:center}.trip .h b{font-size:17px}
+.trip details{margin-top:6px}.trip summary{cursor:pointer;color:var(--brand2)}.trip a{color:var(--brand2)}
+#topv{background:linear-gradient(135deg,#fff8e1,#fff);border-left:5px solid var(--warn)}
+#printArea{display:none}
+@media print{body>*:not(#printArea){display:none!important}#printArea{display:block!important}
+ .qr-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:8mm}.qr-card{border:2px solid #000;padding:8mm;text-align:center;break-inside:avoid;font-size:20pt;line-height:1.4}
+ .qr-card img{width:72mm;height:72mm;image-rendering:pixelated}.qr-card .pl{font-size:30pt;font-weight:800}.qr-card .sm{font-size:14pt;color:#333}}
+</style></head><body>
+<header><a class="back" href="index.html">← <span>กลับ</span></a><h1>ผู้ดูแลระบบ</h1><button class="back hidden" id="bOut" onclick="logout()">ออก</button></header>
 
-<main>
-  <section id="login" class="card">
-    <h3>ป้อน ADMIN_KEY</h3>
-    <div class="form">
-      <label>ADMIN_KEY<input type="password" id="keyInput" autocomplete="off"></label>
-      <button id="btnLogin">เข้าสู่ระบบ</button>
-    </div>
-    <div id="loginMsg" class="msg err hidden"></div>
+<div id="login"><main>
+ <div class="card"><label class="f">รหัสผู้ดูแล (ADMIN_KEY)</label>
+ <input type="password" id="key" onkeydown="if(event.key==='Enter')doLogin()">
+ <button class="big" style="margin-top:14px" onclick="doLogin()">เข้าสู่ระบบ</button>
+ <div id="lerr" class="err hidden"></div></div>
+</main></div>
+
+<div id="app" class="hidden">
+ <div class="wide">
+  <div class="tabs" id="tabs">
+   <button data-t="dash" class="on">📊 Dashboard</button><button data-t="rep">📋 รายงาน</button><button data-t="veh">🚌 รถ &amp; QR</button><button data-t="set">⚙️ ตั้งค่า</button>
+  </div>
+  <div class="live"><span class="dot"></span> อัปเดตอัตโนมัติทุก 10 วินาที · ล่าสุด <b id="upd">-</b></div>
+
+  <section id="t_dash">
+   <div class="seg" id="rng"><button data-n="1" class="on">วันนี้</button><button data-n="7">7 วัน</button><button data-n="30">30 วัน</button></div>
+   <div class="kpis" id="kpis"></div>
+   <div class="card" id="topv"></div>
+   <div class="grid2">
+    <div class="card"><h3>คนขึ้นรถแยกตามรอบ</h3><div class="ch"><canvas id="c1"></canvas></div></div>
+    <div class="card"><h3>คนขึ้นรถแยกตามรถ (แยกสีตามรอบ)</h3><div class="ch"><canvas id="c2"></canvas></div></div>
+    <div class="card"><h3>คนขึ้นรถตามช่วงเวลา (ชั่วโมง)</h3><div class="ch"><canvas id="c3"></canvas></div></div>
+    <div class="card" id="c4box"><h3>แนวโน้มรายวัน</h3><div class="ch"><canvas id="c4"></canvas></div></div>
+   </div>
+   <div class="card"><h3>สรุปแต่ละคัน</h3><div class="tw"><table id="vtab"></table></div></div>
   </section>
 
-  <section id="console" class="hidden">
-    <nav class="tabs">
-      <button data-tab="vehicles" class="on">รถและ QR</button>
-      <button data-tab="employees">พนักงาน</button>
-      <button data-tab="trips">รอบวิ่ง</button>
-      <button data-tab="boardings">การขึ้นรถ</button>
-    </nav>
-
-    <!-- Vehicles -->
-    <div id="tab-vehicles" class="tab">
-      <div class="card">
-        <h3>เพิ่มรถ</h3>
-        <div class="form">
-          <label>รหัสรถ (VehicleID)<input id="vId" placeholder="เช่น CDC-BUS-01"></label>
-          <label>ประเภท<input id="vType" placeholder="รถบัส / รถตู้"></label>
-          <label>ทะเบียน<input id="vPlate"></label>
-          <label>สาย<input id="vRoute"></label>
-          <button id="btnAddVehicle">เพิ่มรถ</button>
-        </div>
-      </div>
-      <div class="card">
-        <div class="row">
-          <h3>รายการรถ</h3>
-          <button id="btnPrintAll" class="ghost">พิมพ์ QR ทั้งหมด</button>
-        </div>
-        <div id="vehicleTable" class="table-wrap"></div>
-      </div>
-    </div>
-
-    <!-- Employees -->
-    <div id="tab-employees" class="tab hidden">
-      <div class="card">
-        <h3>เพิ่มพนักงาน</h3>
-        <div class="form">
-          <label>รหัสพนักงาน<input id="eId"></label>
-          <label>ชื่อ<input id="eName"></label>
-          <label>บทบาท
-            <select id="eRole"><option value="PASSENGER">PASSENGER</option><option value="DRIVER">DRIVER</option></select>
-          </label>
-          <button id="btnAddEmp">เพิ่มพนักงาน</button>
-        </div>
-      </div>
-      <div class="card">
-        <h3>รายการพนักงาน</h3>
-        <div id="employeeTable" class="table-wrap"></div>
-      </div>
-    </div>
-
-    <!-- Trips -->
-    <div id="tab-trips" class="tab hidden">
-      <div class="card">
-        <div class="form">
-          <label>วันที่<input type="date" id="tripDate"></label>
-          <button id="btnLoadTrips">โหลด</button>
-        </div>
-      </div>
-      <div class="card"><div id="tripTable" class="table-wrap"></div></div>
-    </div>
-
-    <!-- Boardings -->
-    <div id="tab-boardings" class="tab hidden">
-      <div class="card">
-        <div class="form">
-          <label>วันที่<input type="date" id="boardDate"></label>
-          <button id="btnLoadBoard">โหลด</button>
-        </div>
-      </div>
-      <div class="card"><div id="boardTable" class="table-wrap"></div></div>
-    </div>
-
-    <div id="qrArea" class="card hidden"></div>
+  <section id="t_rep" class="hidden">
+   <div class="card"><div class="frm">
+    <label>จากวันที่<input type="date" id="rf"></label><label>ถึงวันที่<input type="date" id="rt"></label>
+    <button class="btn" onclick="loadRep()">แสดง</button><button class="btn ghost" onclick="csv()">⬇ CSV</button></div></div>
+   <div id="replist"></div>
   </section>
-</main>
 
+  <section id="t_veh" class="hidden">
+   <div class="card"><h3>เพิ่มรถ</h3><div class="frm">
+    <label>รหัสรถ<input type="text" id="vid"></label><label>ทะเบียน<input type="text" id="vplate"></label>
+    <label>ประเภท<input type="text" id="vtype" placeholder="เช่น รถตู้ / รถบัส"></label><label>สาย/เส้นทาง<input type="text" id="vroute"></label>
+    <button class="btn" onclick="addVeh()">เพิ่ม</button></div></div>
+   <div class="card"><div class="frm" style="justify-content:space-between"><h3 style="margin:0">รถทั้งหมด</h3><button class="btn" onclick="printQR(null)">🖨 พิมพ์ QR ทุกคัน</button></div>
+    <div class="tw"><table id="vehtab"></table></div></div>
+  </section>
+
+  <section id="t_set" class="hidden">
+   <div class="grid2">
+   <div class="card"><h3>รอบรถ</h3><div class="frm"><label>ชื่อรอบ<input type="text" id="rname" placeholder="เช่น เช้า"></label><button class="btn" onclick="addRound()">เพิ่มรอบ</button></div>
+    <div class="tw"><table id="rtab"></table></div></div>
+   <div class="card"><h3>พนักงาน</h3><div class="frm"><label>รหัส<input type="text" id="eid"></label><label>ชื่อ<input type="text" id="ename"></label>
+    <label>หน้าที่<select id="erole"><option value="PASSENGER">พนักงาน</option><option value="DRIVER">พขร.</option></select></label><button class="btn" onclick="addEmp()">เพิ่ม</button></div>
+    <input type="text" id="esearch" placeholder="ค้นหา..." oninput="renderEmp()" style="margin:10px 0">
+    <div class="tw" style="max-height:420px"><table id="etab"></table></div></div>
+   </div>
+  </section>
+ </div>
+</div>
 <div id="printArea"></div>
-<div id="toast" class="toast hidden"></div>
-
 <script>
-  var API_URL = 'https://script.google.com/macros/s/AKfycbyzjO9S6YU0kAoJ4ofO9eiX220sf_p0S4GaV4nvudhTC3D7s3IMda_BSFzSbxAsIuoJSg/exec';
-  var BASE_URL = 'https://cjlcdcitsupport.github.io/BUS-Checker/checkin.html';
-  var TZ = 'Asia/Bangkok';
+var API_URL='https://script.google.com/macros/s/AKfycbyzjO9S6YU0kAoJ4ofO9eiX220sf_p0S4GaV4nvudhTC3D7s3IMda_BSFzSbxAsIuoJSg/exec';
+var LANG='th';try{LANG=localStorage.getItem('bc_lang')||'th';}catch(e){}
+var CD={
+ th:{back:'กลับ',close:'ปิด',loading:'กำลังโหลด...',errNet:'เชื่อมต่อไม่ได้ ลองใหม่อีกครั้ง',camErr:'เปิดกล้องไม่ได้ กรุณาอนุญาตการใช้กล้อง',closeCam:'ปิดกล้อง',scanQr:'สแกน QR บนรถ',pickList:'หรือเลือกรถจากรายการ'},
+ en:{back:'Back',close:'Close',loading:'Loading...',errNet:'Connection failed. Please retry.',camErr:'Cannot open camera. Please allow camera access.',closeCam:'Close camera',scanQr:'Scan the QR on the bus',pickList:'Or pick a bus from the list'},
+ my:{back:'နောက်သို့',close:'ပိတ်မည်',loading:'ခဏစောင့်ပါ...',errNet:'ချိတ်ဆက်၍မရပါ။ ထပ်ကြိုးစားပါ။',camErr:'ကင်မရာဖွင့်မရပါ။ ခွင့်ပြုပေးပါ။',closeCam:'ကင်မရာပိတ်မည်',scanQr:'ကားပေါ်ရှိ QR ကို စကန်ဖတ်ပါ',pickList:'သို့မဟုတ် စာရင်းမှ ကားရွေးပါ'}
+};
+function t(k){var p=(window.PAGE_DICT||{});var d=(p[LANG]&&p[LANG][k]);if(d==null)d=CD[LANG][k];if(d==null)d=(p.th&&p.th[k]);if(d==null)d=CD.th[k];return d==null?k:d;}
+function $(id){return document.getElementById(id);}
+function qs(n){return new URLSearchParams(location.search).get(n)||'';}
+function esc(s){return String(s==null?'':s).replace(/[&<>"]/g,function(c){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c];});}
+function applyLang(){
+  document.documentElement.lang=LANG;document.body.classList.toggle('lang-my',LANG==='my');
+  Array.prototype.forEach.call(document.querySelectorAll('[data-i]'),function(e){e.textContent=t(e.getAttribute('data-i'));});
+  Array.prototype.forEach.call(document.querySelectorAll('[data-ph]'),function(e){e.placeholder=t(e.getAttribute('data-ph'));});
+  Array.prototype.forEach.call(document.querySelectorAll('.langs button'),function(b){b.classList.toggle('on',b.getAttribute('data-l')===LANG);});
+  if(window.onLang)onLang();
+}
+function setLang(l){LANG=l;try{localStorage.setItem('bc_lang',l);}catch(e){}applyLang();}
+function apiGet(p){var u=API_URL+'?'+Object.keys(p).map(function(k){return k+'='+encodeURIComponent(p[k]);}).join('&');return fetch(u).then(function(r){return r.json();});}
+function apiPost(b){return fetch(API_URL,{method:'POST',headers:{'Content-Type':'text/plain;charset=utf-8'},body:JSON.stringify(b)}).then(function(r){return r.json();});}
+function toast(m){var d=document.createElement('div');d.className='toast';d.textContent=m;document.body.appendChild(d);setTimeout(function(){d.remove();},3200);}
+function compress(file,max){return new Promise(function(res,rej){
+  var fr=new FileReader();fr.onerror=rej;fr.onload=function(){var im=new Image();im.onerror=rej;im.onload=function(){
+    var w=im.width,h=im.height,s=Math.min(1,(max||1280)/Math.max(w,h));var c=document.createElement('canvas');c.width=Math.round(w*s);c.height=Math.round(h*s);
+    c.getContext('2d').drawImage(im,0,0,c.width,c.height);var url=c.toDataURL('image/jpeg',0.72);res({photo:url.split(',')[1],mime:'image/jpeg',preview:url});};im.src=fr.result;};fr.readAsDataURL(file);});}
+var scanner=null;
+function startScan(boxId,onCode){
+  var box=$(boxId);box.classList.remove('hidden');
+  if(!window.Html5Qrcode){toast(t('camErr'));return;}
+  scanner=new Html5Qrcode(boxId+'In');
+  scanner.start({facingMode:'environment'},{fps:10,qrbox:{width:240,height:240}},function(txt){stopScan(boxId);onCode(txt);},function(){}).catch(function(){toast(t('camErr'));box.classList.add('hidden');});
+}
+function stopScan(boxId){if(scanner){var s=scanner;scanner=null;s.stop().then(function(){s.clear();}).catch(function(){});}$(boxId).classList.add('hidden');}
+function vehFromText(txt){txt=String(txt||'').trim();try{var u=new URL(txt);var v=u.searchParams.get('v');if(v)return v;}catch(e){}return txt;}
+function showOk(title,lines,btn,after){
+  var o=document.createElement('div');o.id='ov';
+  o.innerHTML='<div class="tick">✓</div><h2>'+esc(title)+'</h2>'+lines.map(function(l){return '<p>'+esc(l)+'</p>';}).join('')+'<button>'+esc(btn)+'</button>';
+  o.querySelector('button').onclick=function(){o.remove();if(after)after();};document.body.appendChild(o);
+}
+function headerHtml(titleKey){return '<a class="back" href="index.html">← <span data-i="back"></span></a><h1 data-i="'+titleKey+'"></h1><div class="langs"><button data-l="th" onclick="setLang(\'th\')">TH</button><button data-l="en" onclick="setLang(\'en\')">EN</button><button data-l="my" onclick="setLang(\'my\')">မြန်မာ</button></div>';}
+</script><script>
+var BASE_URL='https://cjlcdcitsupport.github.io/BUS-Checker/passenger.html';
+var KEY='';try{KEY=sessionStorage.getItem('bc_key')||'';}catch(e){}
+var RANGE=1,TAB='dash',CH={},PAL=['#2f5aa3','#e0a800','#1e8e3e','#c5221f','#7b4fb5','#0e8a9a','#d9822b'];
+var VEHS=[],EMPS=[],RNDS=[],META=null,LAST=null;
+function today(){return new Date().toLocaleDateString('sv-SE',{timeZone:'Asia/Bangkok'});}
+function addDays(d,n){var p=d.split('-');var x=new Date(Date.UTC(+p[0],+p[1]-1,+p[2]+n));return x.toISOString().slice(0,10);}
+function g(id){return $(id).value.trim();}
+function post(b){b.key=KEY;return apiPost(b);}
+function getA(p){p.key=KEY;return apiGet(p);}
+function doLogin(){
+  KEY=$('key').value.trim();if(!KEY)return;
+  getA({action:'admin_vehicles'}).then(function(r){
+    if(!r.ok){$('lerr').textContent=r.error||'รหัสไม่ถูกต้อง';$('lerr').classList.remove('hidden');return;}
+    try{sessionStorage.setItem('bc_key',KEY);}catch(e){}enter(r);
+  }).catch(function(){$('lerr').textContent='เชื่อมต่อไม่ได้';$('lerr').classList.remove('hidden');});
+}
+function logout(){try{sessionStorage.removeItem('bc_key');}catch(e){}location.reload();}
+function enter(r){
+  $('login').classList.add('hidden');$('app').classList.remove('hidden');$('bOut').classList.remove('hidden');
+  VEHS=r.rows;renderVeh();loadSettings();$('rf').value=$('rt').value=today();refresh();
+  setInterval(function(){if(!document.hidden)refresh();},10000);
+}
+document.getElementById('tabs').onclick=function(e){var b=e.target.closest('button');if(!b)return;TAB=b.getAttribute('data-t');
+  Array.prototype.forEach.call(this.children,function(x){x.classList.toggle('on',x===b);});
+  ['dash','rep','veh','set'].forEach(function(k){$('t_'+k).classList.toggle('hidden',k!==TAB);});refresh();};
+document.getElementById('rng').onclick=function(e){var b=e.target.closest('button');if(!b)return;RANGE=+b.getAttribute('data-n');
+  Array.prototype.forEach.call(this.children,function(x){x.classList.toggle('on',x===b);});refresh();};
 
-  var KEY = sessionStorage.getItem('bc_admin_key') || '';
-  var VEH_ACTIVE_IDX = 4; // Vehicles column index: Active
+function rowT(r){return {id:r[0],date:r[2],time:r[3],veh:r[4],plate:r[5],driver:r[7],status:r[8],arrTime:r[10],arrPhoto:r[11],round:r[13],startPhoto:r[14]};}
+function rowB(r){return {id:r[0],date:r[2],time:r[3],trip:r[4],veh:r[5],plate:r[6],emp:r[7],name:r[8],round:r[9]};}
+function fetchRange(f,t){return getA({action:'admin_range',from:f,to:t}).then(function(r){if(!r.ok)throw new Error(r.error);return {trips:r.trips.map(rowT),boards:r.boardings.map(rowB),now:r.now};});}
+function stamp(){var d=new Date();$('upd').textContent=d.toLocaleTimeString('th-TH',{timeZone:'Asia/Bangkok'});}
 
-  function $(id) { return document.getElementById(id); }
+function refresh(){
+  if(TAB==='dash')loadDash();else if(TAB==='rep')loadRep(true);
+}
+function loadDash(){
+  var T=today(),cf=addDays(T,-(RANGE-1)),pt=addDays(cf,-1),pf=addDays(pt,-(RANGE-1));
+  Promise.all([fetchRange(cf,T),fetchRange(pf,pt),apiGet({action:'meta'})]).then(function(a){
+    META=a[2];LAST={cur:a[0],prev:a[1],cf:cf,T:T,pf:pf,pt:pt};stamp();drawDash();
+  }).catch(function(e){if(String(e.message).indexOf('สิทธิ์')>=0)logout();});
+}
+function cnt(arr,fn){var m={};arr.forEach(function(x){var k=fn(x);m[k]=(m[k]||0)+1;});return m;}
+function drawDash(){
+  var L=LAST,C=L.cur,P=L.prev;
+  var rounds=(META&&META.rounds||[]).slice();[C,P].forEach(function(d){d.boards.concat(d.trips).forEach(function(x){if(x.round&&rounds.indexOf(x.round)<0)rounds.push(x.round);});});
+  var vset={};C.boards.forEach(function(b){vset[b.veh]=b.plate||b.veh;});C.trips.forEach(function(x){vset[x.veh]=x.plate||x.veh;});
+  var vids=Object.keys(vset);
+  var perV=vids.map(function(v){var bs=C.boards.filter(function(b){return b.veh===v;});var ts=C.trips.filter(function(x){return x.veh===v;});
+    var byR=cnt(bs,function(b){return b.round;});var top='-',tm=0;Object.keys(byR).forEach(function(k){if(byR[k]>tm){tm=byR[k];top=k;}});
+    return {id:v,plate:vset[v],n:bs.length,trips:ts.length,byR:byR,top:top};}).sort(function(a,b){return b.n-a.n;});
+  var open=C.trips.filter(function(x){return x.status==='OPEN';}).length;
+  $('kpis').innerHTML=[[C.boards.length,'คนขึ้นรถทั้งหมด'],[C.trips.length,'รอบวิ่ง'],[vids.length,'รถที่วิ่ง'],[open,'กำลังวิ่งอยู่'],[C.trips.length?(C.boards.length/C.trips.length).toFixed(1):'0','เฉลี่ยคน/รอบ']]
+    .map(function(k){return '<div class="kpi"><b>'+k[0]+'</b><span>'+k[1]+'</span></div>';}).join('');
+  var best=perV[0];
+  $('topv').innerHTML=best&&best.n?'🏆 <b>รถที่มีคนขึ้นมากที่สุด:</b> '+esc(best.plate)+' — '+best.n+' คน ('+best.trips+' รอบ) · รอบที่คนขึ้นเยอะสุด: '+esc(best.top):'ยังไม่มีข้อมูลในช่วงนี้';
+  var dash=[6,6];
+  // c1 rounds
+  var cr=cnt(C.boards,function(b){return b.round;}),pr=cnt(P.boards,function(b){return b.round;});
+  var cv=rounds.map(function(r){return cr[r]||0;}),pv=rounds.map(function(r){return pr[r]||0;});
+  var avg=cv.length?cv.reduce(function(a,b){return a+b;},0)/cv.length:0;
+  mk('c1',{type:'bar',data:{labels:rounds,datasets:[
+    {label:'ช่วงนี้',data:cv,backgroundColor:PAL[0],order:2},
+    {type:'line',label:'ช่วงก่อนหน้า (เส้นประ)',data:pv,borderColor:'#d9822b',borderDash:dash,backgroundColor:'#d9822b',pointRadius:4,tension:.2,order:1},
+    {type:'line',label:'ค่าเฉลี่ย (เส้นประ)',data:rounds.map(function(){return +avg.toFixed(2);}),borderColor:'#888',borderDash:[3,5],pointRadius:0,borderWidth:2,order:0}]}});
+  // c2 vehicles stacked by round
+  var vavg=perV.length?perV.reduce(function(a,b){return a+b.n;},0)/perV.length:0;
+  var ds=rounds.map(function(r,i){return {label:r,data:perV.map(function(v){return v.byR[r]||0;}),backgroundColor:PAL[i%PAL.length],stack:'s',order:2};});
+  ds.push({type:'line',label:'ค่าเฉลี่ยต่อคัน (เส้นประ)',data:perV.map(function(){return +vavg.toFixed(2);}),borderColor:'#c5221f',borderDash:dash,pointRadius:0,borderWidth:2,order:0});
+  mk('c2',{type:'bar',data:{labels:perV.map(function(v){return v.plate;}),datasets:ds},options:{scales:{x:{stacked:true},y:{stacked:true,beginAtZero:true}}}});
+  // c3 hourly
+  function hrs(bs){var a=[];for(var i=0;i<24;i++)a.push(0);bs.forEach(function(b){var h=parseInt(String(b.time).slice(0,2),10);if(h>=0&&h<24)a[h]++;});return a;}
+  var hc=hrs(C.boards),hp=hrs(P.boards),lab=[];for(var i=0;i<24;i++)lab.push((i<10?'0':'')+i+':00');
+  mk('c3',{type:'line',data:{labels:lab,datasets:[
+    {label:'ช่วงนี้',data:hc,borderColor:PAL[0],backgroundColor:'#2f5aa322',fill:true,tension:.3,pointRadius:2},
+    {label:'ช่วงก่อนหน้า (เส้นประ)',data:hp,borderColor:'#d9822b',borderDash:dash,tension:.3,pointRadius:0}]}});
+  // c4 daily
+  $('c4box').classList.toggle('hidden',RANGE<2);
+  if(RANGE>=2){var days=[],pdays=[];for(var k=0;k<RANGE;k++){days.push(addDays(L.cf,k));pdays.push(addDays(L.pf,k));}
+    var dc=cnt(C.boards,function(b){return b.date;}),dp=cnt(P.boards,function(b){return b.date;});
+    var dv=days.map(function(d){return dc[d]||0;}),dpv=pdays.map(function(d){return dp[d]||0;});var da=dv.reduce(function(a,b){return a+b;},0)/dv.length;
+    mk('c4',{type:'line',data:{labels:days.map(function(d){return d.slice(5);}),datasets:[
+      {label:'ช่วงนี้',data:dv,borderColor:PAL[0],backgroundColor:PAL[0],tension:.25,pointRadius:3},
+      {label:'ช่วงก่อนหน้า (เส้นประ)',data:dpv,borderColor:'#d9822b',borderDash:dash,tension:.25,pointRadius:0},
+      {label:'ค่าเฉลี่ย (เส้นประ)',data:days.map(function(){return +da.toFixed(2);}),borderColor:'#888',borderDash:[3,5],pointRadius:0}]}});}
+  $('vtab').innerHTML='<tr><th>#</th><th>ทะเบียน</th><th>รอบวิ่ง</th><th>คนขึ้นรถ</th><th>เฉลี่ย/รอบ</th><th>รอบที่คนเยอะสุด</th></tr>'+perV.map(function(v,i){return '<tr><td>'+(i+1)+'</td><td><b>'+esc(v.plate)+'</b></td><td>'+v.trips+'</td><td>'+v.n+'</td><td>'+(v.trips?(v.n/v.trips).toFixed(1):'-')+'</td><td>'+esc(v.top)+'</td></tr>';}).join('');
+}
+function mk(id,cfg){
+  cfg.options=cfg.options||{};cfg.options.responsive=true;cfg.options.maintainAspectRatio=false;
+  cfg.options.plugins={legend:{position:'bottom',labels:{boxWidth:14,font:{size:12}}}};
+  cfg.options.scales=cfg.options.scales||{y:{beginAtZero:true,ticks:{precision:0}}};
+  if(CH[id]){CH[id].data=cfg.data;CH[id].options.scales=cfg.options.scales;CH[id].update('none');return;}
+  CH[id]=new Chart($(id),cfg);
+}
 
-  function toast(text) {
-    var t = $('toast');
-    t.textContent = text;
-    t.classList.remove('hidden');
-    clearTimeout(toast._h);
-    toast._h = setTimeout(function () { t.classList.add('hidden'); }, 2500);
-  }
+// ---- report ----
+var REP=null;
+function loadRep(quiet){
+  var f=$('rf').value||today(),t=$('rt').value||f;
+  fetchRange(f,t).then(function(d){REP=d;stamp();drawRep();});
+}
+function drawRep(){
+  var vm={};VEHS.forEach(function(r){vm[r.v[0]]=r.v[3];});
+  var by={};REP.boards.forEach(function(b){(by[b.trip]=by[b.trip]||[]).push(b);});
+  var ts=REP.trips.slice().sort(function(a,b){return (b.date+b.time).localeCompare(a.date+a.time);});
+  $('replist').innerHTML=ts.length?ts.map(function(x){var bs=by[x.id]||[];
+    var st=x.status==='OPEN'?'<span class="bd o">กำลังวิ่ง</span>':x.status==='ARRIVED'?'<span class="bd a">ถึงแล้ว '+esc(x.arrTime)+'</span>':'<span class="bd r">ถูกแทนที่</span>';
+    return '<div class="trip"><div class="h"><b>'+esc(x.plate)+'</b><span class="muted">'+esc(vm[x.veh]||'')+'</span><span class="chip">'+esc(x.round)+'</span><span>👤 '+esc(x.driver)+'</span><span>🕒 '+esc(x.date.slice(5))+' '+esc(x.time)+'</span>'+st+'<b style="margin-left:auto">'+bs.length+' คน</b></div>'
+      +'<div style="margin-top:4px">'+(x.startPhoto?'<a href="'+esc(x.startPhoto)+'" target="_blank">📷 รูปออกรถ</a> ':'')+(x.arrPhoto?'<a href="'+esc(x.arrPhoto)+'" target="_blank">📷 รูปถึงจุดหมาย</a>':'')+'</div>'
+      +(bs.length?'<details><summary>รายชื่อคนขึ้นรถ ('+bs.length+')</summary><table>'+bs.map(function(b){return '<tr><td>'+esc(b.time)+'</td><td>'+esc(b.emp)+'</td><td>'+esc(b.name)+'</td></tr>';}).join('')+'</table></details>':'')+'</div>';}).join(''):'<div class="card muted">ไม่มีข้อมูลในช่วงนี้</div>';
+}
+function csv(){
+  if(!REP){return;}var rows=[['วันที่','เวลา','ทะเบียน','รอบ','รหัสพนักงาน','ชื่อ']];
+  REP.boards.forEach(function(b){rows.push([b.date,b.time,b.plate,b.round,b.emp,b.name]);});
+  var s='﻿'+rows.map(function(r){return r.map(function(c){return '"'+String(c).replace(/"/g,'""')+'"';}).join(',');}).join('\r\n');
+  var a=document.createElement('a');a.href=URL.createObjectURL(new Blob([s],{type:'text/csv;charset=utf-8'}));a.download='bus-boardings_'+$('rf').value+'_'+$('rt').value+'.csv';a.click();
+}
 
-  function todayBkk() {
-    return new Date().toLocaleDateString('sv-SE', { timeZone: TZ });
-  }
+// ---- vehicles ----
+function isY(v){return String(v).toUpperCase()==='Y';}
+function renderVeh(){
+  $('vehtab').innerHTML='<tr><th>รหัส</th><th>ทะเบียน</th><th>ประเภท</th><th>สาย</th><th>สถานะ</th><th></th></tr>'+VEHS.map(function(r){var v=r.v;
+    return '<tr><td>'+esc(v[0])+'</td><td><b>'+esc(v[2])+'</b></td><td>'+esc(v[1])+'</td><td>'+esc(v[3])+'</td><td>'+(isY(v[4])?'<span class="bd o">ใช้งาน</span>':'<span class="bd r">ปิด</span>')+'</td><td><button class="btn small" onclick="printQR(\''+esc(v[0])+'\')">QR</button> <button class="btn small ghost" onclick="tog(\'VEHICLES\',\''+esc(v[0])+'\','+(!isY(v[4]))+')">'+(isY(v[4])?'ปิด':'เปิด')+'</button></td></tr>';}).join('');
+}
+function reloadVeh(){return getA({action:'admin_vehicles'}).then(function(r){if(r.ok){VEHS=r.rows;renderVeh();}});}
+function addVeh(){var id=g('vid');if(!id){toast('กรอกรหัสรถ');return;}
+  post({action:'addVehicle',vehicleId:id,plate:g('vplate'),type:g('vtype'),route:g('vroute')}).then(function(r){if(!r.ok){toast(r.error);return;}toast('เพิ่มแล้ว');['vid','vplate','vtype','vroute'].forEach(function(k){$(k).value='';});reloadVeh();});}
+function tog(sheet,id,val){post({action:'setActive',sheet:sheet,id:id,active:val}).then(function(r){if(!r.ok){toast(r.error);return;}if(sheet==='VEHICLES')reloadVeh();else loadSettings();});}
+function printQR(id){
+  var list=VEHS.filter(function(r){return isY(r.v[4])&&(!id||r.v[0]===id);});
+  if(!list.length){toast('ไม่มีรถ');return;}
+  $('printArea').innerHTML='<div class="qr-grid">'+list.map(function(r){var q=qrcode(0,'M');q.addData(BASE_URL+'?v='+encodeURIComponent(r.v[0]));q.make();
+    return '<div class="qr-card">'+'<img src="'+q.createDataURL(8,0)+'">'+'<div class="pl">'+esc(r.v[2]||r.v[0])+'</div><div class="sm">'+esc(r.v[3])+'</div><div class="sm">สแกนเพื่อบันทึกขึ้นรถ</div></div>';}).join('')+'</div>';
+  setTimeout(function(){window.print();},200);
+}
 
-  async function apiGet(params) {
-    params.key = KEY;
-    var qs = Object.keys(params).map(function (k) {
-      return encodeURIComponent(k) + '=' + encodeURIComponent(params[k]);
-    }).join('&');
-    return (await fetch(API_URL + '?' + qs)).json();
-  }
+// ---- settings ----
+function loadSettings(){
+  getA({action:'admin_rounds'}).then(function(r){if(!r.ok)return;RNDS=r.rows;
+    $('rtab').innerHTML='<tr><th>รอบ</th><th>สถานะ</th><th></th></tr>'+r.rows.map(function(x){var a=isY(x.v[3]);return '<tr><td><b>'+esc(x.v[1])+'</b></td><td>'+(a?'<span class="bd o">ใช้งาน</span>':'<span class="bd r">ปิด</span>')+'</td><td><button class="btn small ghost" onclick="tog(\'ROUNDS\',\''+esc(x.v[0])+'\','+(!a)+')">'+(a?'ปิด':'เปิด')+'</button></td></tr>';}).join('');});
+  getA({action:'admin_employees'}).then(function(r){if(!r.ok)return;EMPS=r.rows;renderEmp();});
+}
+function renderEmp(){var q=g('esearch').toLowerCase();
+  $('etab').innerHTML='<tr><th>รหัส</th><th>ชื่อ</th><th>หน้าที่</th><th></th></tr>'+EMPS.filter(function(x){return !q||(x.v[0]+x.v[1]).toLowerCase().indexOf(q)>=0;}).slice(0,200).map(function(x){var a=isY(x.v[3]);
+    return '<tr><td>'+esc(x.v[0])+'</td><td>'+esc(x.v[1])+'</td><td>'+(x.v[2]==='DRIVER'?'พขร.':'พนักงาน')+'</td><td><button class="btn small ghost" onclick="tog(\'EMPLOYEES\',\''+esc(x.v[0])+'\','+(!a)+')">'+(a?'ปิด':'เปิด')+'</button></td></tr>';}).join('');}
+function addRound(){var n=g('rname');if(!n)return;post({action:'addRound',roundName:n}).then(function(r){if(!r.ok){toast(r.error);return;}$('rname').value='';loadSettings();toast('เพิ่มรอบแล้ว');});}
+function addEmp(){var id=g('eid');if(!id){toast('กรอกรหัส');return;}post({action:'addEmployee',employeeId:id,name:g('ename'),role:$('erole').value}).then(function(r){if(!r.ok){toast(r.error);return;}['eid','ename'].forEach(function(k){$(k).value='';});loadSettings();toast('เพิ่มแล้ว');});}
 
-  async function apiPost(body) {
-    body.key = KEY;
-    var res = await fetch(API_URL, {
-      method: 'POST',
-      headers: { 'Content-Type': 'text/plain;charset=utf-8' },
-      body: JSON.stringify(body)
-    });
-    return res.json();
-  }
-
-  // Generic table: headers + rows [{row, v}]
-  // extra: optional { label, onClick(rowObj) } adds a button column
-  function renderTable(container, headers, rows, extra) {
-    container.innerHTML = '';
-    if (!rows || rows.length === 0) {
-      container.textContent = 'ไม่มีข้อมูล';
-      return;
-    }
-    var table = document.createElement('table');
-    var thead = document.createElement('thead');
-    var htr = document.createElement('tr');
-    headers.forEach(function (h) {
-      var th = document.createElement('th');
-      th.textContent = h;
-      htr.appendChild(th);
-    });
-    if (extra) htr.appendChild(document.createElement('th'));
-    thead.appendChild(htr);
-    table.appendChild(thead);
-
-    var tbody = document.createElement('tbody');
-    rows.forEach(function (r) {
-      var tr = document.createElement('tr');
-      headers.forEach(function (h, i) {
-        var td = document.createElement('td');
-        var val = r.v[i] == null ? '' : String(r.v[i]);
-        if (h === 'PhotoURL' && val.indexOf('http') === 0) {
-          var a = document.createElement('a');
-          a.href = val;
-          a.target = '_blank';
-          a.rel = 'noopener';
-          a.textContent = 'เปิดรูป';
-          td.appendChild(a);
-        } else {
-          td.textContent = val;
-        }
-        tr.appendChild(td);
-      });
-      if (extra) {
-        var td = document.createElement('td');
-        var b = document.createElement('button');
-        b.className = 'small';
-        b.textContent = extra.label;
-        b.addEventListener('click', function () { extra.onClick(r); });
-        td.appendChild(b);
-        tr.appendChild(td);
-      }
-      tbody.appendChild(tr);
-    });
-    table.appendChild(tbody);
-    container.appendChild(table);
-  }
-
-  // ---------- QR ----------
-
-  function qrDataUrl(text) {
-    var qr = qrcode(0, 'M');
-    qr.addData(text);
-    qr.make();
-    return qr.createDataURL(6, 4);
-  }
-
-  function qrCardHtml(id, plate, route) {
-    var url = BASE_URL + '?v=' + encodeURIComponent(id);
-    var card = document.createElement('div');
-    card.className = 'qr-card';
-    var img = document.createElement('img');
-    img.src = qrDataUrl(url);
-    img.alt = id;
-    var p1 = document.createElement('div');
-    p1.textContent = 'ทะเบียน ' + plate;
-    p1.className = 'plate';
-    var p2 = document.createElement('div');
-    p2.textContent = 'สาย ' + route;
-    var p3 = document.createElement('div');
-    p3.textContent = id;
-    p3.style.fontWeight = '700';
-    card.appendChild(img);
-    card.appendChild(p1);
-    card.appendChild(p2);
-    card.appendChild(p3);
-    return card;
-  }
-
-  function showQrOne(r) {
-    var area = $('qrArea');
-    area.innerHTML = '';
-    var h = document.createElement('h3');
-    h.textContent = 'QR ของรถ ' + r.v[0];
-    area.appendChild(h);
-    var grid = document.createElement('div');
-    grid.className = 'qr-grid';
-    grid.appendChild(qrCardHtml(String(r.v[0]), String(r.v[2]), String(r.v[3])));
-    area.appendChild(grid);
-    var pb = document.createElement('button');
-    pb.textContent = 'พิมพ์';
-    pb.className = 'ghost';
-    pb.style.marginTop = '10px';
-    pb.addEventListener('click', function () { printCards([r]); });
-    area.appendChild(pb);
-    area.classList.remove('hidden');
-    area.scrollIntoView({ behavior: 'smooth' });
-  }
-
-  function printCards(list) {
-    var pa = $('printArea');
-    pa.innerHTML = '';
-    var grid = document.createElement('div');
-    grid.className = 'qr-grid';
-    list.forEach(function (r) {
-      grid.appendChild(qrCardHtml(String(r.v[0]), String(r.v[2]), String(r.v[3])));
-    });
-    pa.appendChild(grid);
-    window.print();
-  }
-
-  // ---------- Loaders ----------
-
-  async function loadVehicles() {
-    var r = await apiGet({ action: 'admin_vehicles' });
-    if (!r.ok) throw new Error(r.error);
-    var active = r.rows.filter(function (x) { return String(x.v[VEH_ACTIVE_IDX]).toUpperCase() === 'Y'; });
-    renderTable($('vehicleTable'), r.headers, r.rows, { label: 'QR', onClick: showQrOne });
-    $('btnPrintAll').onclick = function () {
-      if (active.length === 0) return toast('ไม่มีรถที่ใช้งาน');
-      printCards(active);
-    };
-  }
-
-  async function loadEmployees() {
-    var r = await apiGet({ action: 'admin_employees' });
-    if (!r.ok) throw new Error(r.error);
-    renderTable($('employeeTable'), r.headers, r.rows, null);
-  }
-
-  async function loadTrips() {
-    var r = await apiGet({ action: 'admin_trips', date: $('tripDate').value });
-    if (!r.ok) throw new Error(r.error);
-    renderTable($('tripTable'), r.headers, r.rows, null);
-  }
-
-  async function loadBoardings() {
-    var r = await apiGet({ action: 'admin_boardings', date: $('boardDate').value });
-    if (!r.ok) throw new Error(r.error);
-    renderTable($('boardTable'), r.headers, r.rows, null);
-  }
-
-  function guard(fn) {
-    return async function () {
-      try { await fn(); } catch (e) { toast('ผิดพลาด: ' + (e.message || e)); }
-    };
-  }
-
-  // ---------- Actions ----------
-
-  $('btnAddVehicle').addEventListener('click', guard(async function () {
-    var r = await apiPost({
-      action: 'addVehicle',
-      vehicleId: $('vId').value, type: $('vType').value,
-      plate: $('vPlate').value, route: $('vRoute').value
-    });
-    if (!r.ok) return toast(r.error);
-    toast('เพิ่มรถ ' + r.vehicleId + ' แล้ว');
-    ['vId', 'vType', 'vPlate', 'vRoute'].forEach(function (id) { $(id).value = ''; });
-    loadVehicles();
-  }));
-
-  $('btnAddEmp').addEventListener('click', guard(async function () {
-    var r = await apiPost({
-      action: 'addEmployee',
-      employeeId: $('eId').value, name: $('eName').value, role: $('eRole').value
-    });
-    if (!r.ok) return toast(r.error);
-    toast('เพิ่มพนักงาน ' + r.employeeId + ' แล้ว');
-    $('eId').value = ''; $('eName').value = '';
-    loadEmployees();
-  }));
-
-  $('btnLoadTrips').addEventListener('click', guard(loadTrips));
-  $('btnLoadBoard').addEventListener('click', guard(loadBoardings));
-
-  // Tabs
-  document.querySelectorAll('.tabs button[data-tab]').forEach(function (b) {
-    b.addEventListener('click', function () {
-      var name = b.getAttribute('data-tab');
-      document.querySelectorAll('.tabs button[data-tab]').forEach(function (x) { x.classList.toggle('on', x === b); });
-      ['vehicles', 'employees', 'trips', 'boardings'].forEach(function (n) {
-        $('tab-' + n).classList.toggle('hidden', n !== name);
-      });
-      if (name === 'vehicles') guard(loadVehicles)();
-      if (name === 'employees') guard(loadEmployees)();
-      if (name === 'trips') guard(loadTrips)();
-      if (name === 'boardings') guard(loadBoardings)();
-    });
-  });
-
-  // Login / logout
-  function showConsole() {
-    $('login').classList.add('hidden');
-    $('console').classList.remove('hidden');
-    $('btnLogout').classList.remove('hidden');
-    $('tripDate').value = todayBkk();
-    $('boardDate').value = todayBkk();
-    loadVehicles().catch(function (e) { toast(e.message); });
-  }
-
-  function logout() {
-    KEY = '';
-    sessionStorage.removeItem('bc_admin_key');
-    location.reload();
-  }
-
-  $('btnLogin').addEventListener('click', async function () {
-    var msg = $('loginMsg');
-    msg.classList.add('hidden');
-    KEY = $('keyInput').value;
-    try {
-      var r = await apiGet({ action: 'admin_vehicles' });
-      if (!r.ok) throw new Error(r.error);
-      sessionStorage.setItem('bc_admin_key', KEY);
-      showConsole();
-    } catch (e) {
-      KEY = '';
-      msg.textContent = e.message || 'เข้าสู่ระบบไม่สำเร็จ';
-      msg.classList.remove('hidden');
-    }
-  });
-
-  $('keyInput').addEventListener('keydown', function (e) {
-    if (e.key === 'Enter') $('btnLogin').click();
-  });
-
-  $('btnLogout').addEventListener('click', logout);
-
-  // Auto-login if key is kept for this browser session
-  if (KEY) {
-    apiGet({ action: 'admin_vehicles' }).then(function (r) {
-      if (r.ok) showConsole();
-      else logout();
-    });
-  }
-</script>
-</body>
-</html>
+if(KEY){getA({action:'admin_vehicles'}).then(function(r){if(r.ok)enter(r);});}
+</script></body></html>

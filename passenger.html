@@ -1,0 +1,138 @@
+<!DOCTYPE html>
+<html lang="th"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1"><title>Bus Checker - ขึ้นรถ</title><script src="https://unpkg.com/html5-qrcode@2.3.8/html5-qrcode.min.js"></script><style>
+:root{--brand:#1f3a68;--brand2:#2f5aa3;--ok:#1e8e3e;--warn:#e0a800;--err:#c5221f;--bg:#f4f6fa;--ink:#1d2433;--muted:#6b7385;--line:#dbe2ef}
+*{box-sizing:border-box}
+body{margin:0;font-family:'Sarabun','Noto Sans Thai','Noto Sans Myanmar',system-ui,sans-serif;background:var(--bg);color:var(--ink);font-size:17px;line-height:1.55}
+body.lang-my{line-height:1.8}
+header{background:var(--brand);color:#fff;padding:10px 12px;display:flex;align-items:center;gap:10px;position:sticky;top:0;z-index:20}
+header h1{font-size:18px;margin:0;flex:1;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.back{color:#fff;text-decoration:none;background:#ffffff26;border:1px solid #ffffff55;border-radius:22px;padding:7px 14px;font-size:16px;white-space:nowrap;cursor:pointer;font-family:inherit}
+.langs{display:flex;gap:4px}
+.langs button{background:#ffffff1f;color:#fff;border:1px solid #ffffff55;border-radius:14px;padding:3px 10px;font-size:13px;white-space:nowrap;line-height:1.8;cursor:pointer}
+.langs button.on{background:#fff;color:var(--brand)}
+main{max-width:560px;margin:0 auto;padding:14px 14px 40px}
+.card{background:#fff;border-radius:16px;padding:16px;margin-bottom:14px;box-shadow:0 1px 4px #0001}
+.big{display:block;width:100%;padding:18px;font-size:21px;font-weight:700;border:0;border-radius:16px;background:var(--brand2);color:#fff;cursor:pointer;font-family:inherit;white-space:nowrap}
+.big.green{background:var(--ok)} .big.orange{background:#d9822b}
+.big:disabled{opacity:.5}
+.btn{padding:11px 16px;font-size:16px;border:0;border-radius:10px;background:var(--brand);color:#fff;cursor:pointer;font-family:inherit}
+.btn.ghost{background:#fff;color:var(--brand);border:1px solid var(--brand)}
+.btn.small{padding:5px 10px;font-size:13px}
+.hidden{display:none!important}
+label.f{display:block;font-weight:600;margin:12px 0 6px}
+input[type=text],input[type=password],input[type=date],select{width:100%;padding:13px;font-size:18px;border:2px solid #cfd6e4;border-radius:12px;font-family:inherit}
+.plate{font-size:34px;font-weight:800;color:var(--brand);line-height:1.2}
+.route{color:var(--muted);margin-bottom:8px}
+.chips{display:flex;flex-wrap:wrap;gap:8px;margin-top:6px}
+.chip{background:#e3ebfa;color:var(--brand);border-radius:20px;padding:4px 12px;font-size:15px;white-space:nowrap}
+.rounds{display:flex;gap:8px;flex-wrap:wrap}
+.rounds button{flex:1;min-width:90px;padding:14px 10px;font-size:19px;border:2px solid #cfd6e4;background:#fff;border-radius:12px;cursor:pointer;font-family:inherit;white-space:nowrap}
+.rounds button.on{background:var(--brand2);border-color:var(--brand2);color:#fff;font-weight:700}
+.warn{background:#fff7e0;border-left:5px solid var(--warn);padding:12px 14px;border-radius:0 10px 10px 0;margin-bottom:14px}
+.err{background:#fce8e6;color:var(--err);padding:12px 14px;border-radius:10px;margin-top:12px}
+.list button{display:block;width:100%;text-align:left;padding:14px;margin-bottom:8px;border:1px solid var(--line);background:#fff;border-radius:12px;font-size:17px;cursor:pointer;font-family:inherit}
+.list b{color:var(--brand)}
+.photo{display:flex;align-items:center;gap:12px}
+.photo img{width:84px;height:84px;object-fit:cover;border-radius:10px;border:1px solid var(--line)}
+#ov{position:fixed;inset:0;background:var(--ok);color:#fff;z-index:50;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;padding:24px}
+#ov .tick{font-size:96px;line-height:1}
+#ov h2{margin:8px 0;font-size:28px} #ov p{margin:4px 0;font-size:20px}
+#ov button{margin-top:24px;padding:14px 36px;font-size:20px;border:0;border-radius:30px;background:#fff;color:var(--ok);font-weight:700;cursor:pointer;font-family:inherit}
+.toast{position:fixed;bottom:18px;left:50%;transform:translateX(-50%);background:#1d2433;color:#fff;padding:10px 16px;border-radius:8px;font-size:15px;z-index:60}
+.muted{color:var(--muted)} a.lnk{color:var(--brand2);cursor:pointer;text-decoration:underline}
+.spin{text-align:center;padding:30px;color:var(--muted)}
+</style></head><body><header id="hd"></header><main><div id="scanBox" class="card hidden"><div id="scanBoxIn"></div><button class="btn ghost" style="margin-top:10px" onclick="stopScan('scanBox')" data-i="closeCam"></button></div>
+<div id="pick" class="hidden">
+ <button class="big" onclick="startScan('scanBox',function(x){go(vehFromText(x));})">📷 <span data-i="scanQr"></span></button>
+ <p class="muted" style="text-align:center" data-i="pickList"></p><div id="vlist" class="list"></div>
+</div>
+<div id="spin" class="spin" data-i="loading"></div>
+<div id="car" class="hidden">
+ <div class="card"><div class="plate" id="plate"></div><div class="route" id="route"></div>
+  <div class="chips" id="chips"></div></div>
+ <div id="warn" class="warn hidden" data-i="noTrip"></div>
+ <div id="form" class="card hidden">
+  <label class="f" for="emp" data-i="empId"></label>
+  <input type="text" id="emp" autocomplete="off" autocapitalize="characters" data-ph="empPh">
+  <button class="big green" id="go" style="margin-top:16px" onclick="board()" data-i="confirm"></button>
+  <div id="err" class="err hidden"></div>
+ </div>
+ <div style="text-align:center"><a class="lnk" onclick="location.href='passenger.html'" data-i="other"></a></div>
+</div>
+</main><script>
+var API_URL='https://script.google.com/macros/s/AKfycbyzjO9S6YU0kAoJ4ofO9eiX220sf_p0S4GaV4nvudhTC3D7s3IMda_BSFzSbxAsIuoJSg/exec';
+var LANG='th';try{LANG=localStorage.getItem('bc_lang')||'th';}catch(e){}
+var CD={
+ th:{back:'กลับ',close:'ปิด',loading:'กำลังโหลด...',errNet:'เชื่อมต่อไม่ได้ ลองใหม่อีกครั้ง',camErr:'เปิดกล้องไม่ได้ กรุณาอนุญาตการใช้กล้อง',closeCam:'ปิดกล้อง',scanQr:'สแกน QR บนรถ',pickList:'หรือเลือกรถจากรายการ'},
+ en:{back:'Back',close:'Close',loading:'Loading...',errNet:'Connection failed. Please retry.',camErr:'Cannot open camera. Please allow camera access.',closeCam:'Close camera',scanQr:'Scan the QR on the bus',pickList:'Or pick a bus from the list'},
+ my:{back:'နောက်သို့',close:'ပိတ်မည်',loading:'ခဏစောင့်ပါ...',errNet:'ချိတ်ဆက်၍မရပါ။ ထပ်ကြိုးစားပါ။',camErr:'ကင်မရာဖွင့်မရပါ။ ခွင့်ပြုပေးပါ။',closeCam:'ကင်မရာပိတ်မည်',scanQr:'ကားပေါ်ရှိ QR ကို စကန်ဖတ်ပါ',pickList:'သို့မဟုတ် စာရင်းမှ ကားရွေးပါ'}
+};
+function t(k){var p=(window.PAGE_DICT||{});var d=(p[LANG]&&p[LANG][k]);if(d==null)d=CD[LANG][k];if(d==null)d=(p.th&&p.th[k]);if(d==null)d=CD.th[k];return d==null?k:d;}
+function $(id){return document.getElementById(id);}
+function qs(n){return new URLSearchParams(location.search).get(n)||'';}
+function esc(s){return String(s==null?'':s).replace(/[&<>"]/g,function(c){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c];});}
+function applyLang(){
+  document.documentElement.lang=LANG;document.body.classList.toggle('lang-my',LANG==='my');
+  Array.prototype.forEach.call(document.querySelectorAll('[data-i]'),function(e){e.textContent=t(e.getAttribute('data-i'));});
+  Array.prototype.forEach.call(document.querySelectorAll('[data-ph]'),function(e){e.placeholder=t(e.getAttribute('data-ph'));});
+  Array.prototype.forEach.call(document.querySelectorAll('.langs button'),function(b){b.classList.toggle('on',b.getAttribute('data-l')===LANG);});
+  if(window.onLang)onLang();
+}
+function setLang(l){LANG=l;try{localStorage.setItem('bc_lang',l);}catch(e){}applyLang();}
+function apiGet(p){var u=API_URL+'?'+Object.keys(p).map(function(k){return k+'='+encodeURIComponent(p[k]);}).join('&');return fetch(u).then(function(r){return r.json();});}
+function apiPost(b){return fetch(API_URL,{method:'POST',headers:{'Content-Type':'text/plain;charset=utf-8'},body:JSON.stringify(b)}).then(function(r){return r.json();});}
+function toast(m){var d=document.createElement('div');d.className='toast';d.textContent=m;document.body.appendChild(d);setTimeout(function(){d.remove();},3200);}
+function compress(file,max){return new Promise(function(res,rej){
+  var fr=new FileReader();fr.onerror=rej;fr.onload=function(){var im=new Image();im.onerror=rej;im.onload=function(){
+    var w=im.width,h=im.height,s=Math.min(1,(max||1280)/Math.max(w,h));var c=document.createElement('canvas');c.width=Math.round(w*s);c.height=Math.round(h*s);
+    c.getContext('2d').drawImage(im,0,0,c.width,c.height);var url=c.toDataURL('image/jpeg',0.72);res({photo:url.split(',')[1],mime:'image/jpeg',preview:url});};im.src=fr.result;};fr.readAsDataURL(file);});}
+var scanner=null;
+function startScan(boxId,onCode){
+  var box=$(boxId);box.classList.remove('hidden');
+  if(!window.Html5Qrcode){toast(t('camErr'));return;}
+  scanner=new Html5Qrcode(boxId+'In');
+  scanner.start({facingMode:'environment'},{fps:10,qrbox:{width:240,height:240}},function(txt){stopScan(boxId);onCode(txt);},function(){}).catch(function(){toast(t('camErr'));box.classList.add('hidden');});
+}
+function stopScan(boxId){if(scanner){var s=scanner;scanner=null;s.stop().then(function(){s.clear();}).catch(function(){});}$(boxId).classList.add('hidden');}
+function vehFromText(txt){txt=String(txt||'').trim();try{var u=new URL(txt);var v=u.searchParams.get('v');if(v)return v;}catch(e){}return txt;}
+function showOk(title,lines,btn,after){
+  var o=document.createElement('div');o.id='ov';
+  o.innerHTML='<div class="tick">✓</div><h2>'+esc(title)+'</h2>'+lines.map(function(l){return '<p>'+esc(l)+'</p>';}).join('')+'<button>'+esc(btn)+'</button>';
+  o.querySelector('button').onclick=function(){o.remove();if(after)after();};document.body.appendChild(o);
+}
+function headerHtml(titleKey){return '<a class="back" href="index.html">← <span data-i="back"></span></a><h1 data-i="'+titleKey+'"></h1><div class="langs"><button data-l="th" onclick="setLang(\'th\')">TH</button><button data-l="en" onclick="setLang(\'en\')">EN</button><button data-l="my" onclick="setLang(\'my\')">မြန်မာ</button></div>';}
+</script><script>window.PAGE_DICT={
+th:{title:'ขึ้นรถ',noTrip:'รถคันนี้ยังไม่เริ่มรอบวิ่ง กรุณารอพนักงานขับรถกดเริ่มรอบก่อน แล้วสแกนใหม่',empId:'รหัสพนักงานของคุณ',empPh:'พิมพ์รหัสพนักงาน',confirm:'✓ ยืนยันขึ้นรถ',other:'สแกนรถคันอื่น',round:'รอบ',driver:'พขร.',start:'ออกเวลา',okTitle:'บันทึกแล้ว',okBtn:'เสร็จสิ้น',needEmp:'กรุณากรอกรหัสพนักงาน',notFound:'ไม่พบรถคันนี้ในระบบ',time:'เวลา'},
+en:{title:'Board the bus',noTrip:'This bus has not started its trip. Please wait for the driver to start, then scan again.',empId:'Your employee ID',empPh:'Type employee ID',confirm:'✓ Confirm boarding',other:'Scan another bus',round:'Round',driver:'Driver',start:'Departed',okTitle:'Recorded',okBtn:'Done',needEmp:'Please enter your employee ID',notFound:'Bus not found',time:'Time'},
+my:{title:'ကားပေါ်တက်ရန်',noTrip:'ဤကားသည် ခရီးစဉ်မစတင်သေးပါ။ ယာဉ်မောင်းစတင်ပြီးမှ ပြန်စကန်ပါ။',empId:'သင့်ဝန်ထမ်းကုဒ်',empPh:'ဝန်ထမ်းကုဒ်ရိုက်ပါ',confirm:'✓ ကားပေါ်တက်ကြောင်း အတည်ပြု',other:'အခြားကားစကန်မည်',round:'အချိန်ပိုင်း',driver:'ယာဉ်မောင်း',start:'ထွက်ခွာချိန်',okTitle:'မှတ်တမ်းတင်ပြီး',okBtn:'ပြီးပြီ',needEmp:'ဝန်ထမ်းကုဒ်ထည့်ပါ',notFound:'ကားမတွေ့ပါ',time:'အချိန်'}};
+$('hd').innerHTML=headerHtml('title');
+var VID=qs('v'),INFO=null;
+function onLang(){if(INFO)render();}
+function go(v){location.href='passenger.html?v='+encodeURIComponent(v);}
+function err(m){var e=$('err');e.textContent=m;e.classList.remove('hidden');}
+function render(){
+  $('plate').textContent=INFO.plate||INFO.vehicleId;$('route').textContent=INFO.route||'';
+  var c=[];if(INFO.openTrip){c=['<span class="chip">'+t('round')+': '+esc(INFO.openTrip.roundName)+'</span>','<span class="chip">'+t('driver')+': '+esc(INFO.openTrip.driverName)+'</span>','<span class="chip">'+t('start')+' '+esc(INFO.openTrip.startTime)+'</span>'];}
+  $('chips').innerHTML=c.join('');
+  $('warn').classList.toggle('hidden',!!INFO.openTrip);$('form').classList.toggle('hidden',!INFO.openTrip);
+}
+function board(){
+  var e=$('emp').value.trim();if(!e){err(t('needEmp'));return;}
+  $('err').classList.add('hidden');$('go').disabled=true;
+  apiPost({action:'boarding',vehicleId:VID,employeeId:e}).then(function(r){
+    $('go').disabled=false;
+    if(!r.ok){err(r.error||'error');return;}
+    try{localStorage.setItem('bc_emp',e);}catch(x){}
+    showOk(t('okTitle'),[r.employeeName,INFO.plate+' · '+(INFO.openTrip?INFO.openTrip.roundName:''),t('time')+' '+r.time],t('okBtn'),function(){location.href='index.html';});
+  }).catch(function(){$('go').disabled=false;err(t('errNet'));});
+}
+if(VID){
+  apiGet({action:'vehicle',v:VID}).then(function(r){
+    $('spin').classList.add('hidden');
+    if(!r.ok){$('pick').classList.remove('hidden');toast(r.error||t('notFound'));loadList();return;}
+    INFO=r;$('car').classList.remove('hidden');render();
+    try{$('emp').value=localStorage.getItem('bc_emp')||'';}catch(x){}
+  }).catch(function(){$('spin').textContent=t('errNet');});
+}else{$('spin').classList.add('hidden');$('pick').classList.remove('hidden');loadList();}
+function loadList(){apiGet({action:'meta'}).then(function(r){if(!r.ok)return;$('vlist').innerHTML=r.vehicles.map(function(v){return '<button onclick="go(\''+esc(v.id)+'\')"><b>'+esc(v.plate||v.id)+'</b> <span class="muted">'+esc(v.route)+'</span></button>';}).join('');});}
+applyLang();</script></body></html>

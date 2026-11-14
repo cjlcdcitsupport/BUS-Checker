@@ -1,168 +1,96 @@
 <!DOCTYPE html>
-<html lang="th">
-<head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Bus Checker</title>
-<script src="https://unpkg.com/html5-qrcode@2.3.8/html5-qrcode.min.js"></script>
-<style>
-  :root { --brand:#1f3a68; --err:#c5221f; --bg:#f4f6fa; --card:#fff; --ink:#1d2433; --muted:#6b7385; }
-  * { box-sizing:border-box; }
-  body { margin:0; font-family:'Sarabun','Noto Sans Thai',system-ui,sans-serif; background:var(--bg); color:var(--ink); font-size:17px; }
-  header { background:var(--brand); color:#fff; padding:16px; text-align:center; }
-  header h1 { margin:0; font-size:20px; }
-  main { max-width:480px; margin:18px auto; padding:0 14px 40px; }
-  .card { background:var(--card); border-radius:14px; padding:18px; margin-bottom:14px; box-shadow:0 1px 3px #0001; }
-  h2 { font-size:18px; margin:0 0 6px; }
-  p.hint { color:var(--muted); margin:0 0 12px; font-size:15px; }
-  button { width:100%; padding:18px; font-size:19px; border:0; border-radius:12px; background:var(--brand); color:#fff; cursor:pointer; }
-  button.ghost { background:#fff; color:var(--brand); border:1px solid var(--brand); font-size:16px; padding:12px; }
-  button:disabled { opacity:.5; }
-  input { width:100%; padding:14px; font-size:18px; border:1px solid #cfd6e4; border-radius:12px; margin-bottom:10px; }
-  #reader { width:100%; border-radius:12px; overflow:hidden; margin-top:12px; }
-  .hidden { display:none !important; }
-  .sep { text-align:center; color:var(--muted); font-size:14px; margin:14px 0; }
-  .msg { margin-top:12px; padding:12px; border-radius:10px; background:#fce8e6; color:var(--err); font-size:15px; }
-  .menu-btn { margin-bottom:14px; padding:22px; }
-  .menu-btn small { display:block; font-size:14px; font-weight:400; opacity:.85; margin-top:4px; }
-  .menu-btn.alt { background:#fff; color:var(--brand); border:2px solid var(--brand); }
-  .menu-btn.alt small { color:var(--muted); }
-</style>
-</head>
-<body>
-
-<header>
-  <h1>Bus Checker: รถรับ-ส่งพนักงาน CDC</h1>
-</header>
-
+<html lang="th"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1"><title>Bus Checker</title><style>
+:root{--brand:#1f3a68;--brand2:#2f5aa3;--ok:#1e8e3e;--warn:#e0a800;--err:#c5221f;--bg:#f4f6fa;--ink:#1d2433;--muted:#6b7385;--line:#dbe2ef}
+*{box-sizing:border-box}
+body{margin:0;font-family:'Sarabun','Noto Sans Thai','Noto Sans Myanmar',system-ui,sans-serif;background:var(--bg);color:var(--ink);font-size:17px;line-height:1.55}
+body.lang-my{line-height:1.8}
+header{background:var(--brand);color:#fff;padding:10px 12px;display:flex;align-items:center;gap:10px;position:sticky;top:0;z-index:20}
+header h1{font-size:18px;margin:0;flex:1;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.back{color:#fff;text-decoration:none;background:#ffffff26;border:1px solid #ffffff55;border-radius:22px;padding:7px 14px;font-size:16px;white-space:nowrap;cursor:pointer;font-family:inherit}
+.langs{display:flex;gap:4px}
+.langs button{background:#ffffff1f;color:#fff;border:1px solid #ffffff55;border-radius:14px;padding:3px 10px;font-size:13px;white-space:nowrap;line-height:1.8;cursor:pointer}
+.langs button.on{background:#fff;color:var(--brand)}
+main{max-width:560px;margin:0 auto;padding:14px 14px 40px}
+.card{background:#fff;border-radius:16px;padding:16px;margin-bottom:14px;box-shadow:0 1px 4px #0001}
+.big{display:block;width:100%;padding:18px;font-size:21px;font-weight:700;border:0;border-radius:16px;background:var(--brand2);color:#fff;cursor:pointer;font-family:inherit;white-space:nowrap}
+.big.green{background:var(--ok)} .big.orange{background:#d9822b}
+.big:disabled{opacity:.5}
+.btn{padding:11px 16px;font-size:16px;border:0;border-radius:10px;background:var(--brand);color:#fff;cursor:pointer;font-family:inherit}
+.btn.ghost{background:#fff;color:var(--brand);border:1px solid var(--brand)}
+.btn.small{padding:5px 10px;font-size:13px}
+.hidden{display:none!important}
+label.f{display:block;font-weight:600;margin:12px 0 6px}
+input[type=text],input[type=password],input[type=date],select{width:100%;padding:13px;font-size:18px;border:2px solid #cfd6e4;border-radius:12px;font-family:inherit}
+.plate{font-size:34px;font-weight:800;color:var(--brand);line-height:1.2}
+.route{color:var(--muted);margin-bottom:8px}
+.chips{display:flex;flex-wrap:wrap;gap:8px;margin-top:6px}
+.chip{background:#e3ebfa;color:var(--brand);border-radius:20px;padding:4px 12px;font-size:15px;white-space:nowrap}
+.rounds{display:flex;gap:8px;flex-wrap:wrap}
+.rounds button{flex:1;min-width:90px;padding:14px 10px;font-size:19px;border:2px solid #cfd6e4;background:#fff;border-radius:12px;cursor:pointer;font-family:inherit;white-space:nowrap}
+.rounds button.on{background:var(--brand2);border-color:var(--brand2);color:#fff;font-weight:700}
+.warn{background:#fff7e0;border-left:5px solid var(--warn);padding:12px 14px;border-radius:0 10px 10px 0;margin-bottom:14px}
+.err{background:#fce8e6;color:var(--err);padding:12px 14px;border-radius:10px;margin-top:12px}
+.list button{display:block;width:100%;text-align:left;padding:14px;margin-bottom:8px;border:1px solid var(--line);background:#fff;border-radius:12px;font-size:17px;cursor:pointer;font-family:inherit}
+.list b{color:var(--brand)}
+.photo{display:flex;align-items:center;gap:12px}
+.photo img{width:84px;height:84px;object-fit:cover;border-radius:10px;border:1px solid var(--line)}
+#ov{position:fixed;inset:0;background:var(--ok);color:#fff;z-index:50;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;padding:24px}
+#ov .tick{font-size:96px;line-height:1}
+#ov h2{margin:8px 0;font-size:28px} #ov p{margin:4px 0;font-size:20px}
+#ov button{margin-top:24px;padding:14px 36px;font-size:20px;border:0;border-radius:30px;background:#fff;color:var(--ok);font-weight:700;cursor:pointer;font-family:inherit}
+.toast{position:fixed;bottom:18px;left:50%;transform:translateX(-50%);background:#1d2433;color:#fff;padding:10px 16px;border-radius:8px;font-size:15px;z-index:60}
+.muted{color:var(--muted)} a.lnk{color:var(--brand2);cursor:pointer;text-decoration:underline}
+.spin{text-align:center;padding:30px;color:var(--muted)}
+</style></head><body><header><h1 data-i="title"></h1><div class="langs"><button data-l="th" onclick="setLang('th')">TH</button><button data-l="en" onclick="setLang('en')">EN</button><button data-l="my" onclick="setLang('my')">မြန်မာ</button></div></header>
 <main>
-  <!-- Step 1: choose -->
-  <section id="menu">
-    <button class="menu-btn" id="btnGoCheckin">
-      ขึ้นรถ / พขร.
-      <small>สแกน QR ประจำรถเพื่อบันทึกการขึ้นรถ หรือเริ่มรอบวิ่ง</small>
-    </button>
-    <button class="menu-btn alt" id="btnGoAdmin">
-      ผู้ดูแลระบบ
-      <small>จัดการรถ พนักงาน QR และดูรายงาน</small>
-    </button>
-  </section>
-
-  <!-- Step 2: check-in path -->
-  <section id="checkinSection" class="hidden">
-    <button class="ghost" id="btnBack" style="margin-bottom:14px">← กลับหน้าเลือก</button>
-
-    <div class="card">
-      <h2>สแกน QR ประจำรถ</h2>
-      <p class="hint">สแกนป้าย QR ที่ติดบนรถ</p>
-      <button id="btnScan">เปิดกล้องสแกน QR</button>
-      <div id="reader" class="hidden"></div>
-      <button id="btnStop" class="ghost hidden" style="margin-top:10px">ปิดกล้อง</button>
-      <div class="sep">หรือ</div>
-      <h2>พิมพ์รหัสรถ</h2>
-      <input id="vehicleInput" placeholder="เช่น TEST-BUS01" autocomplete="off" autocapitalize="characters">
-      <button class="ghost" id="btnManual">ไปหน้าบันทึก</button>
-      <div id="msg" class="msg hidden"></div>
-    </div>
-  </section>
-</main>
-
-<script>
-  var CHECKIN_PAGE = 'checkin.html';
-  var ADMIN_PAGE = 'admin.html';
-  var scanner = null;
-
-  function $(id) { return document.getElementById(id); }
-
-  function showError(text) {
-    var m = $('msg');
-    m.textContent = text;
-    m.classList.remove('hidden');
-  }
-
-  function showSection(name) {
-    $('menu').classList.toggle('hidden', name !== 'menu');
-    $('checkinSection').classList.toggle('hidden', name !== 'checkin');
-    $('msg').classList.add('hidden');
-  }
-
-  // Accept raw ID or a full URL containing ?v=
-  function extractVehicleId(text) {
-    var s = String(text || '').trim();
-    try {
-      var u = new URL(s);
-      var v = u.searchParams.get('v');
-      if (v) return v.trim().toUpperCase();
-    } catch (e) { /* not a URL */ }
-    return s.toUpperCase().replace(/\s+/g, '');
-  }
-
-  function goCheckin(vehicleId) {
-    if (!vehicleId) return showError('กรุณาระบุรหัสรถ');
-    location.href = CHECKIN_PAGE + '?v=' + encodeURIComponent(vehicleId);
-  }
-
-  async function stopScanner() {
-    if (scanner) {
-      try { await scanner.stop(); } catch (e) { /* already stopped */ }
-      try { scanner.clear(); } catch (e) { /* ignore */ }
-      scanner = null;
-    }
-    $('reader').classList.add('hidden');
-    $('btnStop').classList.add('hidden');
-  }
-
-  $('btnGoCheckin').addEventListener('click', function () { showSection('checkin'); });
-  $('btnGoAdmin').addEventListener('click', function () { location.href = ADMIN_PAGE; });
-  $('btnBack').addEventListener('click', async function () {
-    await stopScanner();
-    showSection('menu');
-  });
-
-  $('btnScan').addEventListener('click', async function () {
-    $('msg').classList.add('hidden');
-    if (typeof Html5Qrcode === 'undefined') {
-      return showError('โหลดตัวสแกนไม่สำเร็จ กรุณาพิมพ์รหัสรถแทน');
-    }
-    $('reader').classList.remove('hidden');
-    $('btnStop').classList.remove('hidden');
-    scanner = new Html5Qrcode('reader');
-    try {
-      await scanner.start(
-        { facingMode: 'environment' },
-        { fps: 10, qrbox: 240 },
-        function (decodedText) {
-          var id = extractVehicleId(decodedText);
-          stopScanner().then(function () { goCheckin(id); });
-        },
-        function () { /* per-frame decode errors are normal; ignore */ }
-      );
-    } catch (e) {
-      await stopScanner();
-      showError('เปิดกล้องไม่ได้ กรุณาอนุญาตการใช้กล้อง หรือพิมพ์รหัสรถแทน');
-    }
-  });
-
-  $('btnStop').addEventListener('click', stopScanner);
-
-  $('btnManual').addEventListener('click', function () {
-    goCheckin(extractVehicleId($('vehicleInput').value));
-  });
-
-  $('vehicleInput').addEventListener('keydown', function (e) {
-    if (e.key === 'Enter') $('btnManual').click();
-  });
-
-  // Old QR links with ?v= go straight to the check-in page
-  (function forwardOldLinks() {
-    var params = new URLSearchParams(location.search);
-    var v = params.get('v');
-    if (v) {
-      var role = params.get('role');
-      var qs = '?v=' + encodeURIComponent(v.trim().toUpperCase()) + (role ? '&role=' + encodeURIComponent(role) : '');
-      location.replace(CHECKIN_PAGE + qs);
-    }
-  })();
-</script>
-</body>
-</html>
+<p class="muted" style="text-align:center;margin:18px 0" data-i="sub"></p>
+<a href="passenger.html" style="text-decoration:none"><button class="big green" style="margin-bottom:14px;padding:26px">🚌 <span data-i="b1"></span></button></a>
+<a href="driver.html" style="text-decoration:none"><button class="big" style="margin-bottom:14px;padding:26px">🧑‍✈️ <span data-i="b2"></span></button></a>
+<a href="admin.html" style="text-decoration:none"><button class="big" style="background:#5f6b82;padding:22px;font-size:18px">⚙️ <span data-i="b3"></span></button></a>
+</main><script>
+var API_URL='https://script.google.com/macros/s/AKfycbyzjO9S6YU0kAoJ4ofO9eiX220sf_p0S4GaV4nvudhTC3D7s3IMda_BSFzSbxAsIuoJSg/exec';
+var LANG='th';try{LANG=localStorage.getItem('bc_lang')||'th';}catch(e){}
+var CD={
+ th:{back:'กลับ',close:'ปิด',loading:'กำลังโหลด...',errNet:'เชื่อมต่อไม่ได้ ลองใหม่อีกครั้ง',camErr:'เปิดกล้องไม่ได้ กรุณาอนุญาตการใช้กล้อง',closeCam:'ปิดกล้อง',scanQr:'สแกน QR บนรถ',pickList:'หรือเลือกรถจากรายการ'},
+ en:{back:'Back',close:'Close',loading:'Loading...',errNet:'Connection failed. Please retry.',camErr:'Cannot open camera. Please allow camera access.',closeCam:'Close camera',scanQr:'Scan the QR on the bus',pickList:'Or pick a bus from the list'},
+ my:{back:'နောက်သို့',close:'ပိတ်မည်',loading:'ခဏစောင့်ပါ...',errNet:'ချိတ်ဆက်၍မရပါ။ ထပ်ကြိုးစားပါ။',camErr:'ကင်မရာဖွင့်မရပါ။ ခွင့်ပြုပေးပါ။',closeCam:'ကင်မရာပိတ်မည်',scanQr:'ကားပေါ်ရှိ QR ကို စကန်ဖတ်ပါ',pickList:'သို့မဟုတ် စာရင်းမှ ကားရွေးပါ'}
+};
+function t(k){var p=(window.PAGE_DICT||{});var d=(p[LANG]&&p[LANG][k]);if(d==null)d=CD[LANG][k];if(d==null)d=(p.th&&p.th[k]);if(d==null)d=CD.th[k];return d==null?k:d;}
+function $(id){return document.getElementById(id);}
+function qs(n){return new URLSearchParams(location.search).get(n)||'';}
+function esc(s){return String(s==null?'':s).replace(/[&<>"]/g,function(c){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c];});}
+function applyLang(){
+  document.documentElement.lang=LANG;document.body.classList.toggle('lang-my',LANG==='my');
+  Array.prototype.forEach.call(document.querySelectorAll('[data-i]'),function(e){e.textContent=t(e.getAttribute('data-i'));});
+  Array.prototype.forEach.call(document.querySelectorAll('[data-ph]'),function(e){e.placeholder=t(e.getAttribute('data-ph'));});
+  Array.prototype.forEach.call(document.querySelectorAll('.langs button'),function(b){b.classList.toggle('on',b.getAttribute('data-l')===LANG);});
+  if(window.onLang)onLang();
+}
+function setLang(l){LANG=l;try{localStorage.setItem('bc_lang',l);}catch(e){}applyLang();}
+function apiGet(p){var u=API_URL+'?'+Object.keys(p).map(function(k){return k+'='+encodeURIComponent(p[k]);}).join('&');return fetch(u).then(function(r){return r.json();});}
+function apiPost(b){return fetch(API_URL,{method:'POST',headers:{'Content-Type':'text/plain;charset=utf-8'},body:JSON.stringify(b)}).then(function(r){return r.json();});}
+function toast(m){var d=document.createElement('div');d.className='toast';d.textContent=m;document.body.appendChild(d);setTimeout(function(){d.remove();},3200);}
+function compress(file,max){return new Promise(function(res,rej){
+  var fr=new FileReader();fr.onerror=rej;fr.onload=function(){var im=new Image();im.onerror=rej;im.onload=function(){
+    var w=im.width,h=im.height,s=Math.min(1,(max||1280)/Math.max(w,h));var c=document.createElement('canvas');c.width=Math.round(w*s);c.height=Math.round(h*s);
+    c.getContext('2d').drawImage(im,0,0,c.width,c.height);var url=c.toDataURL('image/jpeg',0.72);res({photo:url.split(',')[1],mime:'image/jpeg',preview:url});};im.src=fr.result;};fr.readAsDataURL(file);});}
+var scanner=null;
+function startScan(boxId,onCode){
+  var box=$(boxId);box.classList.remove('hidden');
+  if(!window.Html5Qrcode){toast(t('camErr'));return;}
+  scanner=new Html5Qrcode(boxId+'In');
+  scanner.start({facingMode:'environment'},{fps:10,qrbox:{width:240,height:240}},function(txt){stopScan(boxId);onCode(txt);},function(){}).catch(function(){toast(t('camErr'));box.classList.add('hidden');});
+}
+function stopScan(boxId){if(scanner){var s=scanner;scanner=null;s.stop().then(function(){s.clear();}).catch(function(){});}$(boxId).classList.add('hidden');}
+function vehFromText(txt){txt=String(txt||'').trim();try{var u=new URL(txt);var v=u.searchParams.get('v');if(v)return v;}catch(e){}return txt;}
+function showOk(title,lines,btn,after){
+  var o=document.createElement('div');o.id='ov';
+  o.innerHTML='<div class="tick">✓</div><h2>'+esc(title)+'</h2>'+lines.map(function(l){return '<p>'+esc(l)+'</p>';}).join('')+'<button>'+esc(btn)+'</button>';
+  o.querySelector('button').onclick=function(){o.remove();if(after)after();};document.body.appendChild(o);
+}
+function headerHtml(titleKey){return '<a class="back" href="index.html">← <span data-i="back"></span></a><h1 data-i="'+titleKey+'"></h1><div class="langs"><button data-l="th" onclick="setLang(\'th\')">TH</button><button data-l="en" onclick="setLang(\'en\')">EN</button><button data-l="my" onclick="setLang(\'my\')">မြန်မာ</button></div>';}
+</script><script>window.PAGE_DICT={
+th:{title:'Bus Checker',sub:'เลือกว่าคุณคือใคร',b1:'พนักงาน: ขึ้นรถ',b2:'พนักงานขับรถ',b3:'ผู้ดูแลระบบ'},
+en:{title:'Bus Checker',sub:'Choose your role',b1:'Passenger: Board',b2:'Driver',b3:'Admin'},
+my:{title:'Bus Checker',sub:'သင့်အခန်းကဏ္ဍကို ရွေးပါ',b1:'ဝန်ထမ်း: ကားပေါ်တက်',b2:'ယာဉ်မောင်း',b3:'စီမံခန့်ခွဲသူ'}};
+applyLang();</script></body></html>
