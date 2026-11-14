@@ -78,15 +78,15 @@
     <div id="panelDriver" class="card hidden">
       <!-- start trip (no open trip) -->
       <form id="formStart" class="hidden">
-        <label for="drvIdStart" id="lblDrv1">รหัสพนักงานขับรถ</label>
-        <input type="text" id="drvIdStart" autocomplete="off" autocapitalize="characters" required>
+        <label for="drvIdStart" id="lblDrv1">ชื่อพนักงานขับรถ</label>
+        <input type="text" id="drvIdStart" autocomplete="name" required>
         <button class="primary" type="submit" id="btnStart">เริ่มรอบวิ่ง</button>
       </form>
 
       <!-- arrive (open trip) -->
       <form id="formArrive" class="hidden">
-        <label for="drvIdArrive" id="lblDrv2">รหัสพนักงานขับรถ</label>
-        <input type="text" id="drvIdArrive" autocomplete="off" autocapitalize="characters" required>
+        <label for="drvIdArrive" id="lblDrv2">ชื่อพนักงานขับรถ</label>
+        <input type="text" id="drvIdArrive" autocomplete="name" required>
         <label for="photo" id="lblPhoto">ถ่ายรูปยืนยันที่ CDC</label>
         <input type="file" id="photo" accept="image/*" capture="environment" required>
         <img id="preview" alt="">
@@ -103,21 +103,21 @@
 
   var I18N = {
     th: { title:'Bus Checker', plate:'ทะเบียน', route:'สาย', type:'ประเภท', emp:'รหัสพนักงาน',
-      drv:'รหัสพนักงานขับรถ', board:'บันทึกขึ้นรถ', start:'เริ่มรอบวิ่ง', arrive:'ยืนยันถึง CDC',
+      drv:'ชื่อพนักงานขับรถ', board:'บันทึกขึ้นรถ', start:'เริ่มรอบวิ่ง', arrive:'ยืนยันถึง CDC',
       photo:'ถ่ายรูปยืนยันที่ CDC', tabP:'ขึ้นรถ', tabD:'พนักงานขับรถ', openTrip:'รอบที่เปิดอยู่',
       driver:'พขร.', since:'เริ่ม', noVehicle:'ไม่พบรหัสรถในลิงก์ กรุณาสแกน QR ประจำรถอีกครั้ง',
       noTrip:'ยังไม่มีรอบวิ่ง พขร. ต้องเริ่มรอบก่อน', needPhoto:'ต้องถ่ายรูปยืนยันที่ CDC',
       okBoard:'บันทึกขึ้นรถแล้ว', okStart:'เริ่มรอบวิ่งแล้ว', okArrive:'บันทึกถึง CDC แล้ว',
       err:'เกิดข้อผิดพลาด', net:'เชื่อมต่อระบบไม่ได้ ลองใหม่อีกครั้ง', loading:'กำลังโหลด…' },
     en: { title:'Bus Checker', plate:'Plate', route:'Route', type:'Type', emp:'Employee ID',
-      drv:'Driver ID', board:'Record boarding', start:'Start trip', arrive:'Confirm arrival at CDC',
+      drv:'Driver name', board:'Record boarding', start:'Start trip', arrive:'Confirm arrival at CDC',
       photo:'Photo at CDC', tabP:'Boarding', tabD:'Driver', openTrip:'Open trip',
       driver:'Driver', since:'Started', noVehicle:'No vehicle ID in link. Please scan the vehicle QR again.',
       noTrip:'No open trip yet. The driver must start the trip first.', needPhoto:'A photo at CDC is required',
       okBoard:'Boarding recorded', okStart:'Trip started', okArrive:'Arrival recorded',
       err:'Error', net:'Cannot reach the server. Please try again.', loading:'Loading…' },
     my: { title:'Bus Checker', plate:'ပြားအမှတ်', route:'လမ်းကြောင်း', type:'အမျိုးအစား', emp:'ဝန်ထမ်းကုဒ်',
-      drv:'ယာဉ်မောင်းကုဒ်', board:'တက်ရောက်မှတ်တမ်းတင်ရန်', start:'ခရီးစဉ်စတင်ရန်', arrive:'CDC သို့ ရောက်ရှိကြောင်း အတည်ပြုရန်',
+      drv:'ယာဉ်မောင်းအမည်', board:'တက်ရောက်မှတ်တမ်းတင်ရန်', start:'ခရီးစဉ်စတင်ရန်', arrive:'CDC သို့ ရောက်ရှိကြောင်း အတည်ပြုရန်',
       photo:'CDC တွင် ဓာတ်ပုံ', tabP:'တက်ရောက်ခြင်း', tabD:'ယာဉ်မောင်း', openTrip:'ဖွင့်ထားသော ခရီးစဉ်',
       driver:'ယာဉ်မောင်း', since:'စတင်ချိန်', noVehicle:'လင့်ခ်တွင် ယာဉ်ကုဒ်မပါပါ။ QR ကို ထပ်စကင်န်ပါ။',
       noTrip:'ဖွင့်ထားသော ခရီးစဉ်မရှိသေးပါ။ ယာဉ်မောင်းက ခရီးစဉ်ကို အရင်စတင်ရပါမည်။', needPhoto:'CDC တွင် ဓာတ်ပုံ လိုအပ်ပါသည်',
@@ -255,7 +255,7 @@
     btn.disabled = true;
     var drv = $('drvIdStart').value.trim();
     try {
-      var r = await apiPost({ action: 'startTrip', vehicleId: vehicleId, driverId: drv });
+      var r = await apiPost({ action: 'startTrip', vehicleId: vehicleId, driverName: drv });
       if (r.ok) {
         sessionStorage.setItem('bc_driver', drv);
         showMsg(msg, true, t('okStart') + ' · ' + r.driverName + ' · ' + r.time);
@@ -317,7 +317,7 @@
     }
     try {
       var b64 = await compressImage(file);
-      var r = await apiPost({ action: 'arrive', vehicleId: vehicleId, driverId: drv, photo: b64, mime: 'image/jpeg' });
+      var r = await apiPost({ action: 'arrive', vehicleId: vehicleId, driverName: drv, photo: b64, mime: 'image/jpeg' });
       if (r.ok) {
         sessionStorage.setItem('bc_driver', drv);
         showMsg(msg, true, t('okArrive') + ' · ' + r.arrivedAt);
