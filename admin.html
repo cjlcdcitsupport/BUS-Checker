@@ -1,0 +1,424 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Bus Checker Admin</title>
+<script src="https://cdn.jsdelivr.net/npm/qrcode-generator@1.4.4/qrcode.js"></script>
+<style>
+  :root { --brand:#1f3a68; --ok:#1e8e3e; --err:#c5221f; --bg:#f4f6fa; --card:#fff; --ink:#1d2433; --muted:#6b7385; }
+  * { box-sizing:border-box; }
+  body { margin:0; font-family:'Sarabun','Noto Sans Thai',system-ui,sans-serif; background:var(--bg); color:var(--ink); font-size:15px; }
+  header { background:var(--brand); color:#fff; padding:12px 18px; display:flex; justify-content:space-between; align-items:center; }
+  header h1 { font-size:18px; margin:0; }
+  main { max-width:1100px; margin:16px auto; padding:0 14px 40px; }
+  .card { background:var(--card); border-radius:12px; padding:16px; margin-bottom:14px; box-shadow:0 1px 3px #0001; }
+  .row { display:flex; justify-content:space-between; align-items:center; gap:10px; flex-wrap:wrap; }
+  h3 { margin:0 0 10px; font-size:16px; }
+  .form { display:flex; gap:8px; flex-wrap:wrap; align-items:flex-end; }
+  .form label { display:flex; flex-direction:column; font-size:13px; color:var(--muted); gap:4px; }
+  input, select { padding:9px 10px; font-size:15px; border:1px solid #cfd6e4; border-radius:8px; min-width:140px; }
+  button { padding:9px 14px; font-size:15px; border:0; border-radius:8px; background:var(--brand); color:#fff; cursor:pointer; }
+  button.ghost { background:#fff; color:var(--brand); border:1px solid var(--brand); }
+  button.small { padding:5px 10px; font-size:13px; }
+  button:disabled { opacity:.5; }
+  .tabs { display:flex; gap:8px; flex-wrap:wrap; margin-bottom:14px; }
+  .tabs button { background:#fff; color:var(--brand); border:1px solid #cfd6e4; }
+  .tabs button.on { background:var(--brand); color:#fff; }
+  .tab.hidden, .hidden { display:none; }
+  .table-wrap { overflow-x:auto; }
+  table { width:100%; border-collapse:collapse; }
+  th, td { text-align:left; padding:8px 10px; border-bottom:1px solid #e6e9f0; white-space:nowrap; }
+  th { color:var(--muted); font-weight:600; font-size:13px; background:#f8f9fc; }
+  td a { color:var(--brand); }
+  .msg { padding:10px 12px; border-radius:8px; margin-top:10px; }
+  .msg.ok { background:#e6f4ea; color:var(--ok); }
+  .msg.err { background:#fce8e6; color:var(--err); }
+  .toast { position:fixed; bottom:18px; left:50%; transform:translateX(-50%); background:#1d2433; color:#fff; padding:10px 16px; border-radius:8px; font-size:14px; }
+  #printArea { display:none; }
+  .qr-grid { display:grid; grid-template-columns:repeat(3,1fr); gap:8mm; }
+  .qr-card { border:1px solid #000; padding:5mm; text-align:center; break-inside:avoid; font-size:12pt; }
+  .qr-card img { width:50mm; height:50mm; }
+  @media print {
+    body > *:not(#printArea) { display:none !important; }
+    #printArea { display:block !important; }
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <h1>Bus Checker: Admin</h1>
+  <button id="btnLogout" class="ghost hidden">ออกจากระบบ</button>
+</header>
+
+<main>
+  <section id="login" class="card">
+    <h3>ป้อน ADMIN_KEY</h3>
+    <div class="form">
+      <label>ADMIN_KEY<input type="password" id="keyInput" autocomplete="off"></label>
+      <button id="btnLogin">เข้าสู่ระบบ</button>
+    </div>
+    <div id="loginMsg" class="msg err hidden"></div>
+  </section>
+
+  <section id="console" class="hidden">
+    <nav class="tabs">
+      <button data-tab="vehicles" class="on">รถและ QR</button>
+      <button data-tab="employees">พนักงาน</button>
+      <button data-tab="trips">รอบวิ่ง</button>
+      <button data-tab="boardings">การขึ้นรถ</button>
+    </nav>
+
+    <!-- Vehicles -->
+    <div id="tab-vehicles" class="tab">
+      <div class="card">
+        <h3>เพิ่มรถ</h3>
+        <div class="form">
+          <label>รหัสรถ (VehicleID)<input id="vId" placeholder="เช่น CDC-BUS-01"></label>
+          <label>ประเภท<input id="vType" placeholder="รถบัส / รถตู้"></label>
+          <label>ทะเบียน<input id="vPlate"></label>
+          <label>สาย<input id="vRoute"></label>
+          <button id="btnAddVehicle">เพิ่มรถ</button>
+        </div>
+      </div>
+      <div class="card">
+        <div class="row">
+          <h3>รายการรถ</h3>
+          <button id="btnPrintAll" class="ghost">พิมพ์ QR ทั้งหมด</button>
+        </div>
+        <div id="vehicleTable" class="table-wrap"></div>
+      </div>
+    </div>
+
+    <!-- Employees -->
+    <div id="tab-employees" class="tab hidden">
+      <div class="card">
+        <h3>เพิ่มพนักงาน</h3>
+        <div class="form">
+          <label>รหัสพนักงาน<input id="eId"></label>
+          <label>ชื่อ<input id="eName"></label>
+          <label>บทบาท
+            <select id="eRole"><option value="PASSENGER">PASSENGER</option><option value="DRIVER">DRIVER</option></select>
+          </label>
+          <button id="btnAddEmp">เพิ่มพนักงาน</button>
+        </div>
+      </div>
+      <div class="card">
+        <h3>รายการพนักงาน</h3>
+        <div id="employeeTable" class="table-wrap"></div>
+      </div>
+    </div>
+
+    <!-- Trips -->
+    <div id="tab-trips" class="tab hidden">
+      <div class="card">
+        <div class="form">
+          <label>วันที่<input type="date" id="tripDate"></label>
+          <button id="btnLoadTrips">โหลด</button>
+        </div>
+      </div>
+      <div class="card"><div id="tripTable" class="table-wrap"></div></div>
+    </div>
+
+    <!-- Boardings -->
+    <div id="tab-boardings" class="tab hidden">
+      <div class="card">
+        <div class="form">
+          <label>วันที่<input type="date" id="boardDate"></label>
+          <button id="btnLoadBoard">โหลด</button>
+        </div>
+      </div>
+      <div class="card"><div id="boardTable" class="table-wrap"></div></div>
+    </div>
+
+    <div id="qrArea" class="card hidden"></div>
+  </section>
+</main>
+
+<div id="printArea"></div>
+<div id="toast" class="toast hidden"></div>
+
+<script>
+  var API_URL = 'https://script.google.com/macros/s/AKfycbyzjO9S6YU0kAoJ4ofO9eiX220sf_p0S4GaV4nvudhTC3D7s3IMda_BSFzSbxAsIuoJSg/exec';
+  var BASE_URL = 'https://cjlcdcitsupport.github.io/BUS-Checker/checkin.html';
+  var TZ = 'Asia/Bangkok';
+
+  var KEY = sessionStorage.getItem('bc_admin_key') || '';
+  var VEH_ACTIVE_IDX = 4; // Vehicles column index: Active
+
+  function $(id) { return document.getElementById(id); }
+
+  function toast(text) {
+    var t = $('toast');
+    t.textContent = text;
+    t.classList.remove('hidden');
+    clearTimeout(toast._h);
+    toast._h = setTimeout(function () { t.classList.add('hidden'); }, 2500);
+  }
+
+  function todayBkk() {
+    return new Date().toLocaleDateString('sv-SE', { timeZone: TZ });
+  }
+
+  async function apiGet(params) {
+    params.key = KEY;
+    var qs = Object.keys(params).map(function (k) {
+      return encodeURIComponent(k) + '=' + encodeURIComponent(params[k]);
+    }).join('&');
+    return (await fetch(API_URL + '?' + qs)).json();
+  }
+
+  async function apiPost(body) {
+    body.key = KEY;
+    var res = await fetch(API_URL, {
+      method: 'POST',
+      headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+      body: JSON.stringify(body)
+    });
+    return res.json();
+  }
+
+  // Generic table: headers + rows [{row, v}]
+  // extra: optional { label, onClick(rowObj) } adds a button column
+  function renderTable(container, headers, rows, extra) {
+    container.innerHTML = '';
+    if (!rows || rows.length === 0) {
+      container.textContent = 'ไม่มีข้อมูล';
+      return;
+    }
+    var table = document.createElement('table');
+    var thead = document.createElement('thead');
+    var htr = document.createElement('tr');
+    headers.forEach(function (h) {
+      var th = document.createElement('th');
+      th.textContent = h;
+      htr.appendChild(th);
+    });
+    if (extra) htr.appendChild(document.createElement('th'));
+    thead.appendChild(htr);
+    table.appendChild(thead);
+
+    var tbody = document.createElement('tbody');
+    rows.forEach(function (r) {
+      var tr = document.createElement('tr');
+      headers.forEach(function (h, i) {
+        var td = document.createElement('td');
+        var val = r.v[i] == null ? '' : String(r.v[i]);
+        if (h === 'PhotoURL' && val.indexOf('http') === 0) {
+          var a = document.createElement('a');
+          a.href = val;
+          a.target = '_blank';
+          a.rel = 'noopener';
+          a.textContent = 'เปิดรูป';
+          td.appendChild(a);
+        } else {
+          td.textContent = val;
+        }
+        tr.appendChild(td);
+      });
+      if (extra) {
+        var td = document.createElement('td');
+        var b = document.createElement('button');
+        b.className = 'small';
+        b.textContent = extra.label;
+        b.addEventListener('click', function () { extra.onClick(r); });
+        td.appendChild(b);
+        tr.appendChild(td);
+      }
+      tbody.appendChild(tr);
+    });
+    table.appendChild(tbody);
+    container.appendChild(table);
+  }
+
+  // ---------- QR ----------
+
+  function qrDataUrl(text) {
+    var qr = qrcode(0, 'M');
+    qr.addData(text);
+    qr.make();
+    return qr.createDataURL(6, 4);
+  }
+
+  function qrCardHtml(id, plate, route) {
+    var url = BASE_URL + '?v=' + encodeURIComponent(id);
+    var card = document.createElement('div');
+    card.className = 'qr-card';
+    var img = document.createElement('img');
+    img.src = qrDataUrl(url);
+    img.alt = id;
+    var p1 = document.createElement('div');
+    p1.textContent = 'ทะเบียน ' + plate;
+    var p2 = document.createElement('div');
+    p2.textContent = 'สาย ' + route;
+    var p3 = document.createElement('div');
+    p3.textContent = id;
+    p3.style.fontWeight = '700';
+    card.appendChild(img);
+    card.appendChild(p1);
+    card.appendChild(p2);
+    card.appendChild(p3);
+    return card;
+  }
+
+  function showQrOne(r) {
+    var area = $('qrArea');
+    area.innerHTML = '';
+    var h = document.createElement('h3');
+    h.textContent = 'QR ของรถ ' + r.v[0];
+    area.appendChild(h);
+    var grid = document.createElement('div');
+    grid.className = 'qr-grid';
+    grid.appendChild(qrCardHtml(String(r.v[0]), String(r.v[2]), String(r.v[3])));
+    area.appendChild(grid);
+    var pb = document.createElement('button');
+    pb.textContent = 'พิมพ์';
+    pb.className = 'ghost';
+    pb.style.marginTop = '10px';
+    pb.addEventListener('click', function () { printCards([r]); });
+    area.appendChild(pb);
+    area.classList.remove('hidden');
+    area.scrollIntoView({ behavior: 'smooth' });
+  }
+
+  function printCards(list) {
+    var pa = $('printArea');
+    pa.innerHTML = '';
+    var grid = document.createElement('div');
+    grid.className = 'qr-grid';
+    list.forEach(function (r) {
+      grid.appendChild(qrCardHtml(String(r.v[0]), String(r.v[2]), String(r.v[3])));
+    });
+    pa.appendChild(grid);
+    window.print();
+  }
+
+  // ---------- Loaders ----------
+
+  async function loadVehicles() {
+    var r = await apiGet({ action: 'admin_vehicles' });
+    if (!r.ok) throw new Error(r.error);
+    var active = r.rows.filter(function (x) { return String(x.v[VEH_ACTIVE_IDX]).toUpperCase() === 'Y'; });
+    renderTable($('vehicleTable'), r.headers, r.rows, { label: 'QR', onClick: showQrOne });
+    $('btnPrintAll').onclick = function () {
+      if (active.length === 0) return toast('ไม่มีรถที่ใช้งาน');
+      printCards(active);
+    };
+  }
+
+  async function loadEmployees() {
+    var r = await apiGet({ action: 'admin_employees' });
+    if (!r.ok) throw new Error(r.error);
+    renderTable($('employeeTable'), r.headers, r.rows, null);
+  }
+
+  async function loadTrips() {
+    var r = await apiGet({ action: 'admin_trips', date: $('tripDate').value });
+    if (!r.ok) throw new Error(r.error);
+    renderTable($('tripTable'), r.headers, r.rows, null);
+  }
+
+  async function loadBoardings() {
+    var r = await apiGet({ action: 'admin_boardings', date: $('boardDate').value });
+    if (!r.ok) throw new Error(r.error);
+    renderTable($('boardTable'), r.headers, r.rows, null);
+  }
+
+  function guard(fn) {
+    return async function () {
+      try { await fn(); } catch (e) { toast('ผิดพลาด: ' + (e.message || e)); }
+    };
+  }
+
+  // ---------- Actions ----------
+
+  $('btnAddVehicle').addEventListener('click', guard(async function () {
+    var r = await apiPost({
+      action: 'addVehicle',
+      vehicleId: $('vId').value, type: $('vType').value,
+      plate: $('vPlate').value, route: $('vRoute').value
+    });
+    if (!r.ok) return toast(r.error);
+    toast('เพิ่มรถ ' + r.vehicleId + ' แล้ว');
+    ['vId', 'vType', 'vPlate', 'vRoute'].forEach(function (id) { $(id).value = ''; });
+    loadVehicles();
+  }));
+
+  $('btnAddEmp').addEventListener('click', guard(async function () {
+    var r = await apiPost({
+      action: 'addEmployee',
+      employeeId: $('eId').value, name: $('eName').value, role: $('eRole').value
+    });
+    if (!r.ok) return toast(r.error);
+    toast('เพิ่มพนักงาน ' + r.employeeId + ' แล้ว');
+    $('eId').value = ''; $('eName').value = '';
+    loadEmployees();
+  }));
+
+  $('btnLoadTrips').addEventListener('click', guard(loadTrips));
+  $('btnLoadBoard').addEventListener('click', guard(loadBoardings));
+
+  // Tabs
+  document.querySelectorAll('.tabs button[data-tab]').forEach(function (b) {
+    b.addEventListener('click', function () {
+      var name = b.getAttribute('data-tab');
+      document.querySelectorAll('.tabs button[data-tab]').forEach(function (x) { x.classList.toggle('on', x === b); });
+      ['vehicles', 'employees', 'trips', 'boardings'].forEach(function (n) {
+        $('tab-' + n).classList.toggle('hidden', n !== name);
+      });
+      if (name === 'vehicles') guard(loadVehicles)();
+      if (name === 'employees') guard(loadEmployees)();
+      if (name === 'trips') guard(loadTrips)();
+      if (name === 'boardings') guard(loadBoardings)();
+    });
+  });
+
+  // Login / logout
+  function showConsole() {
+    $('login').classList.add('hidden');
+    $('console').classList.remove('hidden');
+    $('btnLogout').classList.remove('hidden');
+    $('tripDate').value = todayBkk();
+    $('boardDate').value = todayBkk();
+    loadVehicles().catch(function (e) { toast(e.message); });
+  }
+
+  function logout() {
+    KEY = '';
+    sessionStorage.removeItem('bc_admin_key');
+    location.reload();
+  }
+
+  $('btnLogin').addEventListener('click', async function () {
+    var msg = $('loginMsg');
+    msg.classList.add('hidden');
+    KEY = $('keyInput').value;
+    try {
+      var r = await apiGet({ action: 'admin_vehicles' });
+      if (!r.ok) throw new Error(r.error);
+      sessionStorage.setItem('bc_admin_key', KEY);
+      showConsole();
+    } catch (e) {
+      KEY = '';
+      msg.textContent = e.message || 'เข้าสู่ระบบไม่สำเร็จ';
+      msg.classList.remove('hidden');
+    }
+  });
+
+  $('keyInput').addEventListener('keydown', function (e) {
+    if (e.key === 'Enter') $('btnLogin').click();
+  });
+
+  $('btnLogout').addEventListener('click', logout);
+
+  // Auto-login if key is kept for this browser session
+  if (KEY) {
+    apiGet({ action: 'admin_vehicles' }).then(function (r) {
+      if (r.ok) showConsole();
+      else logout();
+    });
+  }
+</script>
+</body>
+</html>

@@ -4,360 +4,164 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Bus Checker</title>
+<script src="https://unpkg.com/html5-qrcode@2.3.8/html5-qrcode.min.js"></script>
 <style>
-  :root { --brand:#1f3a68; --ok:#1e8e3e; --err:#c5221f; --bg:#f4f6fa; --card:#fff; --ink:#1d2433; --muted:#6b7385; }
+  :root { --brand:#1f3a68; --err:#c5221f; --bg:#f4f6fa; --card:#fff; --ink:#1d2433; --muted:#6b7385; }
   * { box-sizing:border-box; }
-  body { margin:0; font-family:'Sarabun','Noto Sans Thai','Noto Sans Myanmar',system-ui,sans-serif; background:var(--bg); color:var(--ink); font-size:17px; }
-  header { background:var(--brand); color:#fff; padding:14px 16px; display:flex; justify-content:space-between; align-items:center; gap:8px; }
-  header h1 { font-size:19px; margin:0; }
-  .lang { display:flex; gap:4px; }
-  .lang button { background:transparent; color:#fff; border:1px solid #fff8; border-radius:6px; padding:4px 8px; font-size:14px; cursor:pointer; }
-  .lang button.on { background:#fff; color:var(--brand); }
-  main { max-width:520px; margin:16px auto; padding:0 14px 40px; }
-  .card { background:var(--card); border-radius:12px; padding:16px; margin-bottom:14px; box-shadow:0 1px 3px #0001; }
-  .vehicle dl { display:grid; grid-template-columns:auto 1fr; gap:6px 12px; margin:0; }
-  .vehicle dt { color:var(--muted); }
-  .vehicle dd { margin:0; font-weight:600; }
-  .tabs { display:flex; gap:8px; margin-bottom:14px; }
-  .tabs button { flex:1; padding:12px; border:1px solid #cfd6e4; background:#fff; border-radius:10px; font-size:16px; cursor:pointer; }
-  .tabs button.on { background:var(--brand); color:#fff; border-color:var(--brand); }
-  label { display:block; margin:10px 0 6px; color:var(--muted); font-size:15px; }
-  input[type=text], input[type=file] { width:100%; padding:12px; font-size:18px; border:1px solid #cfd6e4; border-radius:10px; }
-  button.primary { width:100%; margin-top:14px; padding:14px; font-size:18px; border:0; border-radius:10px; background:var(--brand); color:#fff; cursor:pointer; }
-  button.primary:disabled { opacity:.5; }
-  .msg { margin-top:12px; padding:12px; border-radius:10px; font-size:16px; }
-  .msg.ok { background:#e6f4ea; color:var(--ok); }
-  .msg.err { background:#fce8e6; color:var(--err); }
-  .trip { background:#eef3fb; border-radius:10px; padding:10px 12px; margin-bottom:6px; }
-  .hidden { display:none; }
-  .center { text-align:center; color:var(--muted); padding:30px 10px; }
-  #preview { width:100%; margin-top:10px; border-radius:10px; display:none; }
+  body { margin:0; font-family:'Sarabun','Noto Sans Thai',system-ui,sans-serif; background:var(--bg); color:var(--ink); font-size:17px; }
+  header { background:var(--brand); color:#fff; padding:16px; text-align:center; }
+  header h1 { margin:0; font-size:20px; }
+  main { max-width:480px; margin:18px auto; padding:0 14px 40px; }
+  .card { background:var(--card); border-radius:14px; padding:18px; margin-bottom:14px; box-shadow:0 1px 3px #0001; }
+  h2 { font-size:18px; margin:0 0 6px; }
+  p.hint { color:var(--muted); margin:0 0 12px; font-size:15px; }
+  button { width:100%; padding:18px; font-size:19px; border:0; border-radius:12px; background:var(--brand); color:#fff; cursor:pointer; }
+  button.ghost { background:#fff; color:var(--brand); border:1px solid var(--brand); font-size:16px; padding:12px; }
+  button:disabled { opacity:.5; }
+  input { width:100%; padding:14px; font-size:18px; border:1px solid #cfd6e4; border-radius:12px; margin-bottom:10px; }
+  #reader { width:100%; border-radius:12px; overflow:hidden; margin-top:12px; }
+  .hidden { display:none !important; }
+  .sep { text-align:center; color:var(--muted); font-size:14px; margin:14px 0; }
+  .msg { margin-top:12px; padding:12px; border-radius:10px; background:#fce8e6; color:var(--err); font-size:15px; }
+  .menu-btn { margin-bottom:14px; padding:22px; }
+  .menu-btn small { display:block; font-size:14px; font-weight:400; opacity:.85; margin-top:4px; }
+  .menu-btn.alt { background:#fff; color:var(--brand); border:2px solid var(--brand); }
+  .menu-btn.alt small { color:var(--muted); }
 </style>
 </head>
 <body>
 
 <header>
-  <h1 id="title">Bus Checker</h1>
-  <div class="lang">
-    <button data-lang="th">ไทย</button>
-    <button data-lang="en">EN</button>
-    <button data-lang="my">မြန်မာ</button>
-  </div>
+  <h1>Bus Checker: รถรับ-ส่งพนักงาน CDC</h1>
 </header>
 
 <main>
-  <div id="loading" class="center">…</div>
-  <div id="fatal" class="card hidden"></div>
+  <!-- Step 1: choose -->
+  <section id="menu">
+    <button class="menu-btn" id="btnGoCheckin">
+      ขึ้นรถ / พขร.
+      <small>สแกน QR ประจำรถเพื่อบันทึกการขึ้นรถ หรือเริ่มรอบวิ่ง</small>
+    </button>
+    <button class="menu-btn alt" id="btnGoAdmin">
+      ผู้ดูแลระบบ
+      <small>จัดการรถ พนักงาน QR และดูรายงาน</small>
+    </button>
+  </section>
 
-  <section id="app" class="hidden">
-    <div class="card vehicle">
-      <dl>
-        <dt id="lblPlate">ทะเบียน</dt><dd id="vPlate">-</dd>
-        <dt id="lblRoute">สาย</dt><dd id="vRoute">-</dd>
-        <dt id="lblType">ประเภท</dt><dd id="vType">-</dd>
-      </dl>
-      <div id="openTripBox" class="trip hidden" style="margin-top:12px"></div>
-    </div>
+  <!-- Step 2: check-in path -->
+  <section id="checkinSection" class="hidden">
+    <button class="ghost" id="btnBack" style="margin-bottom:14px">← กลับหน้าเลือก</button>
 
-    <div class="tabs">
-      <button id="tabPassenger" class="on">ขึ้นรถ</button>
-      <button id="tabDriver">พนักงานขับรถ</button>
-    </div>
-
-    <!-- Passenger -->
-    <div id="panelPassenger" class="card">
-      <form id="formBoard">
-        <label for="empId" id="lblEmp">รหัสพนักงาน</label>
-        <input type="text" id="empId" autocomplete="off" autocapitalize="characters" required>
-        <button class="primary" type="submit" id="btnBoard">บันทึกขึ้นรถ</button>
-      </form>
-      <div id="boardMsg" class="msg hidden"></div>
-    </div>
-
-    <!-- Driver -->
-    <div id="panelDriver" class="card hidden">
-      <!-- start trip (no open trip) -->
-      <form id="formStart" class="hidden">
-        <label for="drvIdStart" id="lblDrv1">รหัสพนักงานขับรถ</label>
-        <input type="text" id="drvIdStart" autocomplete="off" autocapitalize="characters" required>
-        <button class="primary" type="submit" id="btnStart">เริ่มรอบวิ่ง</button>
-      </form>
-
-      <!-- arrive (open trip) -->
-      <form id="formArrive" class="hidden">
-        <label for="drvIdArrive" id="lblDrv2">รหัสพนักงานขับรถ</label>
-        <input type="text" id="drvIdArrive" autocomplete="off" autocapitalize="characters" required>
-        <label for="photo" id="lblPhoto">ถ่ายรูปยืนยันที่ CDC</label>
-        <input type="file" id="photo" accept="image/*" capture="environment" required>
-        <img id="preview" alt="">
-        <button class="primary" type="submit" id="btnArrive">ยืนยันถึง CDC</button>
-      </form>
-      <div id="driverMsg" class="msg hidden"></div>
+    <div class="card">
+      <h2>สแกน QR ประจำรถ</h2>
+      <p class="hint">สแกนป้าย QR ที่ติดบนรถ</p>
+      <button id="btnScan">เปิดกล้องสแกน QR</button>
+      <div id="reader" class="hidden"></div>
+      <button id="btnStop" class="ghost hidden" style="margin-top:10px">ปิดกล้อง</button>
+      <div class="sep">หรือ</div>
+      <h2>พิมพ์รหัสรถ</h2>
+      <input id="vehicleInput" placeholder="เช่น TEST-BUS01" autocomplete="off" autocapitalize="characters">
+      <button class="ghost" id="btnManual">ไปหน้าบันทึก</button>
+      <div id="msg" class="msg hidden"></div>
     </div>
   </section>
 </main>
 
 <script>
-  // Web app URL from Apps Script deployment (Execute as: Me, Who has access: Anyone)
-  var API_URL = 'https://script.google.com/macros/s/AKfycbyzjO9S6YU0kAoJ4ofO9eiX220sf_p0S4GaV4nvudhTC3D7s3IMda_BSFzSbxAsIuoJSg/exec';
+  var CHECKIN_PAGE = 'checkin.html';
+  var ADMIN_PAGE = 'admin.html';
+  var scanner = null;
 
-  var I18N = {
-    th: { title:'Bus Checker', plate:'ทะเบียน', route:'สาย', type:'ประเภท', emp:'รหัสพนักงาน',
-      drv:'รหัสพนักงานขับรถ', board:'บันทึกขึ้นรถ', start:'เริ่มรอบวิ่ง', arrive:'ยืนยันถึง CDC',
-      photo:'ถ่ายรูปยืนยันที่ CDC', tabP:'ขึ้นรถ', tabD:'พนักงานขับรถ', openTrip:'รอบที่เปิดอยู่',
-      driver:'พขร.', since:'เริ่ม', noVehicle:'ไม่พบรหัสรถในลิงก์ กรุณาสแกน QR ประจำรถอีกครั้ง',
-      noTrip:'ยังไม่มีรอบวิ่ง พขร. ต้องเริ่มรอบก่อน', needPhoto:'ต้องถ่ายรูปยืนยันที่ CDC',
-      okBoard:'บันทึกขึ้นรถแล้ว', okStart:'เริ่มรอบวิ่งแล้ว', okArrive:'บันทึกถึง CDC แล้ว',
-      err:'เกิดข้อผิดพลาด', net:'เชื่อมต่อระบบไม่ได้ ลองใหม่อีกครั้ง', loading:'กำลังโหลด…' },
-    en: { title:'Bus Checker', plate:'Plate', route:'Route', type:'Type', emp:'Employee ID',
-      drv:'Driver ID', board:'Record boarding', start:'Start trip', arrive:'Confirm arrival at CDC',
-      photo:'Photo at CDC', tabP:'Boarding', tabD:'Driver', openTrip:'Open trip',
-      driver:'Driver', since:'Started', noVehicle:'No vehicle ID in link. Please scan the vehicle QR again.',
-      noTrip:'No open trip yet. The driver must start the trip first.', needPhoto:'A photo at CDC is required',
-      okBoard:'Boarding recorded', okStart:'Trip started', okArrive:'Arrival recorded',
-      err:'Error', net:'Cannot reach the server. Please try again.', loading:'Loading…' },
-    my: { title:'Bus Checker', plate:'ပြားအမှတ်', route:'လမ်းကြောင်း', type:'အမျိုးအစား', emp:'ဝန်ထမ်းကုဒ်',
-      drv:'ယာဉ်မောင်းကုဒ်', board:'တက်ရောက်မှတ်တမ်းတင်ရန်', start:'ခရီးစဉ်စတင်ရန်', arrive:'CDC သို့ ရောက်ရှိကြောင်း အတည်ပြုရန်',
-      photo:'CDC တွင် ဓာတ်ပုံ', tabP:'တက်ရောက်ခြင်း', tabD:'ယာဉ်မောင်း', openTrip:'ဖွင့်ထားသော ခရီးစဉ်',
-      driver:'ယာဉ်မောင်း', since:'စတင်ချိန်', noVehicle:'လင့်ခ်တွင် ယာဉ်ကုဒ်မပါပါ။ QR ကို ထပ်စကင်န်ပါ။',
-      noTrip:'ဖွင့်ထားသော ခရီးစဉ်မရှိသေးပါ။ ယာဉ်မောင်းက ခရီးစဉ်ကို အရင်စတင်ရပါမည်။', needPhoto:'CDC တွင် ဓာတ်ပုံ လိုအပ်ပါသည်',
-      okBoard:'တက်ရောက်မှတ်တမ်းတင်ပြီး', okStart:'ခရီးစဉ် စတင်ပြီး', okArrive:'ရောက်ရှိမှတ်တမ်းတင်ပြီး',
-      err:'အမှား', net:'ဆာဗာသို့ ချိတ်ဆက်၍မရပါ။ ထပ်ကြိုးစားပါ။', loading:'လုပ်ဆောင်နေသည်…' }
-  };
-
-  var lang = localStorage.getItem('bc_lang') || 'th';
-  var vehicleId = '';
-  var vehicle = null;   // last response from action=vehicle
-  var role = 'passenger';
-
-  function t(k) { return (I18N[lang] && I18N[lang][k]) || I18N.th[k] || k; }
   function $(id) { return document.getElementById(id); }
 
-  function applyLang() {
-    document.documentElement.lang = lang;
-    document.title = t('title');
-    $('title').textContent = t('title');
-    $('lblPlate').textContent = t('plate');
-    $('lblRoute').textContent = t('route');
-    $('lblType').textContent = t('type');
-    $('lblEmp').textContent = t('emp');
-    $('lblDrv1').textContent = t('drv');
-    $('lblDrv2').textContent = t('drv');
-    $('lblPhoto').textContent = t('photo');
-    $('tabPassenger').textContent = t('tabP');
-    $('tabDriver').textContent = t('tabD');
-    $('btnBoard').textContent = t('board');
-    $('btnStart').textContent = t('start');
-    $('btnArrive').textContent = t('arrive');
-    document.querySelectorAll('.lang button').forEach(function (b) {
-      b.classList.toggle('on', b.getAttribute('data-lang') === lang);
-    });
+  function showError(text) {
+    var m = $('msg');
+    m.textContent = text;
+    m.classList.remove('hidden');
   }
 
-  function showMsg(el, ok, text) {
-    el.textContent = text;
-    el.className = 'msg ' + (ok ? 'ok' : 'err');
+  function showSection(name) {
+    $('menu').classList.toggle('hidden', name !== 'menu');
+    $('checkinSection').classList.toggle('hidden', name !== 'checkin');
+    $('msg').classList.add('hidden');
   }
 
-  function showFatal(text) {
-    $('loading').classList.add('hidden');
-    var f = $('fatal');
-    f.textContent = text;
-    f.classList.remove('hidden');
-  }
-
-  async function apiGet(params) {
-    var qs = Object.keys(params).map(function (k) {
-      return encodeURIComponent(k) + '=' + encodeURIComponent(params[k]);
-    }).join('&');
-    var res = await fetch(API_URL + '?' + qs);
-    return res.json();
-  }
-
-  async function apiPost(body) {
-    // text/plain avoids a CORS preflight on Apps Script
-    var res = await fetch(API_URL, {
-      method: 'POST',
-      headers: { 'Content-Type': 'text/plain;charset=utf-8' },
-      body: JSON.stringify(body)
-    });
-    return res.json();
-  }
-
-  async function loadVehicle() {
+  // Accept raw ID or a full URL containing ?v=
+  function extractVehicleId(text) {
+    var s = String(text || '').trim();
     try {
-      vehicle = await apiGet({ action: 'vehicle', v: vehicleId });
-    } catch (e) {
-      return showFatal(t('net'));
-    }
-    if (!vehicle || !vehicle.ok) {
-      return showFatal((vehicle && vehicle.error) || t('err'));
-    }
-    $('vPlate').textContent = vehicle.plate || '-';
-    $('vRoute').textContent = vehicle.route || '-';
-    $('vType').textContent = vehicle.type || '-';
-
-    var box = $('openTripBox');
-    if (vehicle.openTrip) {
-      box.textContent = t('openTrip') + ': ' + t('driver') + ' ' + vehicle.openTrip.driverName +
-        ' · ' + t('since') + ' ' + vehicle.openTrip.startTime;
-      box.classList.remove('hidden');
-    } else {
-      box.classList.add('hidden');
-    }
-    renderDriverForms();
+      var u = new URL(s);
+      var v = u.searchParams.get('v');
+      if (v) return v.trim().toUpperCase();
+    } catch (e) { /* not a URL */ }
+    return s.toUpperCase().replace(/\s+/g, '');
   }
 
-  function renderDriverForms() {
-    var hasTrip = !!(vehicle && vehicle.openTrip);
-    $('formStart').classList.toggle('hidden', hasTrip);
-    $('formArrive').classList.toggle('hidden', !hasTrip);
-    var saved = sessionStorage.getItem('bc_driver') || '';
-    if (saved) { $('drvIdArrive').value = saved; }
+  function goCheckin(vehicleId) {
+    if (!vehicleId) return showError('กรุณาระบุรหัสรถ');
+    location.href = CHECKIN_PAGE + '?v=' + encodeURIComponent(vehicleId);
   }
 
-  function setRole(r) {
-    role = r;
-    $('tabPassenger').classList.toggle('on', r === 'passenger');
-    $('tabDriver').classList.toggle('on', r === 'driver');
-    $('panelPassenger').classList.toggle('hidden', r !== 'passenger');
-    $('panelDriver').classList.toggle('hidden', r !== 'driver');
+  async function stopScanner() {
+    if (scanner) {
+      try { await scanner.stop(); } catch (e) { /* already stopped */ }
+      try { scanner.clear(); } catch (e) { /* ignore */ }
+      scanner = null;
+    }
+    $('reader').classList.add('hidden');
+    $('btnStop').classList.add('hidden');
   }
 
-  // Passenger: boarding
-  $('formBoard').addEventListener('submit', async function (ev) {
-    ev.preventDefault();
-    var msg = $('boardMsg');
-    msg.classList.add('hidden');
-    var btn = $('btnBoard');
-    btn.disabled = true;
+  $('btnGoCheckin').addEventListener('click', function () { showSection('checkin'); });
+  $('btnGoAdmin').addEventListener('click', function () { location.href = ADMIN_PAGE; });
+  $('btnBack').addEventListener('click', async function () {
+    await stopScanner();
+    showSection('menu');
+  });
+
+  $('btnScan').addEventListener('click', async function () {
+    $('msg').classList.add('hidden');
+    if (typeof Html5Qrcode === 'undefined') {
+      return showError('โหลดตัวสแกนไม่สำเร็จ กรุณาพิมพ์รหัสรถแทน');
+    }
+    $('reader').classList.remove('hidden');
+    $('btnStop').classList.remove('hidden');
+    scanner = new Html5Qrcode('reader');
     try {
-      var r = await apiPost({ action: 'boarding', vehicleId: vehicleId, employeeId: $('empId').value });
-      if (r.ok) {
-        showMsg(msg, true, t('okBoard') + ' · ' + r.employeeName + ' · ' + r.time);
-        $('empId').value = '';
-      } else {
-        showMsg(msg, false, r.error);
-      }
+      await scanner.start(
+        { facingMode: 'environment' },
+        { fps: 10, qrbox: 240 },
+        function (decodedText) {
+          var id = extractVehicleId(decodedText);
+          stopScanner().then(function () { goCheckin(id); });
+        },
+        function () { /* per-frame decode errors are normal; ignore */ }
+      );
     } catch (e) {
-      showMsg(msg, false, t('net'));
+      await stopScanner();
+      showError('เปิดกล้องไม่ได้ กรุณาอนุญาตการใช้กล้อง หรือพิมพ์รหัสรถแทน');
     }
-    msg.classList.remove('hidden');
-    btn.disabled = false;
   });
 
-  // Driver: start trip
-  $('formStart').addEventListener('submit', async function (ev) {
-    ev.preventDefault();
-    var msg = $('driverMsg');
-    msg.classList.add('hidden');
-    var btn = $('btnStart');
-    btn.disabled = true;
-    var drv = $('drvIdStart').value.trim();
-    try {
-      var r = await apiPost({ action: 'startTrip', vehicleId: vehicleId, driverId: drv });
-      if (r.ok) {
-        sessionStorage.setItem('bc_driver', drv);
-        showMsg(msg, true, t('okStart') + ' · ' + r.driverName + ' · ' + r.time);
-        await loadVehicle();
-      } else {
-        showMsg(msg, false, r.error);
-      }
-    } catch (e) {
-      showMsg(msg, false, t('net'));
-    }
-    msg.classList.remove('hidden');
-    btn.disabled = false;
+  $('btnStop').addEventListener('click', stopScanner);
+
+  $('btnManual').addEventListener('click', function () {
+    goCheckin(extractVehicleId($('vehicleInput').value));
   });
 
-  // Photo preview
-  $('photo').addEventListener('change', function () {
-    var f = this.files && this.files[0];
-    var img = $('preview');
-    if (!f) { img.style.display = 'none'; return; }
-    img.src = URL.createObjectURL(f);
-    img.style.display = 'block';
+  $('vehicleInput').addEventListener('keydown', function (e) {
+    if (e.key === 'Enter') $('btnManual').click();
   });
 
-  // Resize to max 1280px JPEG to keep the POST small
-  function compressImage(file) {
-    return new Promise(function (resolve, reject) {
-      var url = URL.createObjectURL(file);
-      var img = new Image();
-      img.onload = function () {
-        var max = 1280;
-        var scale = Math.min(1, max / Math.max(img.width, img.height));
-        var c = document.createElement('canvas');
-        c.width = Math.round(img.width * scale);
-        c.height = Math.round(img.height * scale);
-        c.getContext('2d').drawImage(img, 0, 0, c.width, c.height);
-        var dataUrl = c.toDataURL('image/jpeg', 0.8);
-        URL.revokeObjectURL(url);
-        resolve(dataUrl.split(',')[1]); // base64 without prefix
-      };
-      img.onerror = function () { reject(new Error('image')); };
-      img.src = url;
-    });
-  }
-
-  // Driver: arrival
-  $('formArrive').addEventListener('submit', async function (ev) {
-    ev.preventDefault();
-    var msg = $('driverMsg');
-    msg.classList.add('hidden');
-    var btn = $('btnArrive');
-    btn.disabled = true;
-    var drv = $('drvIdArrive').value.trim();
-    var file = $('photo').files && $('photo').files[0];
-    if (!file) {
-      showMsg(msg, false, t('needPhoto'));
-      msg.classList.remove('hidden');
-      btn.disabled = false;
-      return;
-    }
-    try {
-      var b64 = await compressImage(file);
-      var r = await apiPost({ action: 'arrive', vehicleId: vehicleId, driverId: drv, photo: b64, mime: 'image/jpeg' });
-      if (r.ok) {
-        sessionStorage.setItem('bc_driver', drv);
-        showMsg(msg, true, t('okArrive') + ' · ' + r.arrivedAt);
-        $('photo').value = '';
-        $('preview').style.display = 'none';
-        await loadVehicle();
-      } else {
-        showMsg(msg, false, r.error);
-      }
-    } catch (e) {
-      showMsg(msg, false, t('net'));
-    }
-    msg.classList.remove('hidden');
-    btn.disabled = false;
-  });
-
-  // Tabs and language
-  $('tabPassenger').addEventListener('click', function () { setRole('passenger'); });
-  $('tabDriver').addEventListener('click', function () { setRole('driver'); });
-  document.querySelectorAll('.lang button').forEach(function (b) {
-    b.addEventListener('click', function () {
-      lang = b.getAttribute('data-lang');
-      localStorage.setItem('bc_lang', lang);
-      applyLang();
-    });
-  });
-
-  // Init
-  (async function init() {
-    applyLang();
+  // Old QR links with ?v= go straight to the check-in page
+  (function forwardOldLinks() {
     var params = new URLSearchParams(location.search);
-    vehicleId = (params.get('v') || '').trim().toUpperCase();
-    if (params.get('role') === 'driver') setRole('driver');
-    if (!vehicleId) {
-      return showFatal(t('noVehicle'));
+    var v = params.get('v');
+    if (v) {
+      var role = params.get('role');
+      var qs = '?v=' + encodeURIComponent(v.trim().toUpperCase()) + (role ? '&role=' + encodeURIComponent(role) : '');
+      location.replace(CHECKIN_PAGE + qs);
     }
-    $('loading').textContent = t('loading');
-    await loadVehicle();
-    $('loading').classList.add('hidden');
-    $('app').classList.remove('hidden');
   })();
 </script>
 </body>
