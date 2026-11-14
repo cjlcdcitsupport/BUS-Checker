@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="th"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1"><title>Bus Checker Admin</title><script src="https://cdn.jsdelivr.net/npm/qrcode-generator@1.4.4/qrcode.js"></script><script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script><style>
+<html lang="th"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1"><title>Bus Checker Admin</title><script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script><script src="https://cdn.jsdelivr.net/npm/qrcode-generator@1.4.4/qrcode.js"></script><script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script><style>
 :root{--brand:#1f3a68;--brand2:#2f5aa3;--ok:#1e8e3e;--warn:#e0a800;--err:#c5221f;--bg:#f4f6fa;--ink:#1d2433;--muted:#6b7385;--line:#dbe2ef}
 *{box-sizing:border-box}
 body{margin:0;font-family:'Sarabun','Noto Sans Thai','Noto Sans Myanmar',system-ui,sans-serif;background:var(--bg);color:var(--ink);font-size:17px;line-height:1.55}
@@ -101,7 +101,12 @@ input[type=text],input[type=password],input[type=date],select{width:100%;padding
   <section id="t_rep" class="hidden">
    <div class="card"><div class="frm">
     <label>จากวันที่<input type="date" id="rf"></label><label>ถึงวันที่<input type="date" id="rt"></label>
-    <button class="btn" onclick="loadRep()">แสดง</button><button class="btn ghost" onclick="csv()">⬇ CSV</button></div></div>
+    <label>ทะเบียนรถ<select id="rplate" onchange="drawRep()"><option value="">ทุกคัน</option></select></label>
+    <button class="btn" onclick="loadRep()">แสดง</button>
+    <button class="btn" style="background:#1e8e3e" onclick="xl()">⬇ Excel แยก Trip</button><button class="btn ghost" onclick="csv()">⬇ CSV</button></div>
+    <div style="margin-top:10px;font-size:14px"><label style="display:inline-flex;flex-direction:row;gap:6px;align-items:center;color:inherit"><input type="checkbox" id="rsheets" style="min-width:0"> แยกชีตตาม Trip (ไฟล์ Excel: 1 Trip = 1 ชีต)</label>
+    &nbsp; <label style="display:inline-flex;flex-direction:row;gap:6px;align-items:center;color:inherit"><input type="checkbox" id="ropen" checked onchange="drawRep()" style="min-width:0"> กางรายชื่อคนขึ้นรถทุก Trip</label></div>
+    <div id="rsum" class="muted" style="margin-top:8px"></div></div>
    <div id="replist"></div>
   </section>
 
@@ -120,6 +125,15 @@ input[type=text],input[type=password],input[type=date],select{width:100%;padding
     <div class="tw"><table id="rtab"></table></div></div>
    <div class="card"><h3>พนักงาน</h3><div class="frm"><label>รหัส<input type="text" id="eid"></label><label>ชื่อ<input type="text" id="ename"></label>
     <label>หน้าที่<select id="erole"><option value="PASSENGER">พนักงาน</option><option value="DRIVER">พขร.</option></select></label><button class="btn" onclick="addEmp()">เพิ่ม</button></div>
+    <div style="background:#f4f8ff;border:1px dashed #9db4dc;border-radius:12px;padding:12px;margin:12px 0">
+     <b>นำเข้ารายชื่อพนักงานจากไฟล์</b>
+     <div style="margin:8px 0"><button class="btn small" onclick="tpl()">⬇ ดาวน์โหลด Template (.xlsx)</button> <span class="muted" style="font-size:13px">กรอกแล้วอัปโหลดกลับได้ (.xlsx / .csv)</span></div>
+     <label style="display:block;margin:6px 0"><input type="radio" name="imode" value="append" checked style="min-width:0"> <b>เพิ่มจากของเดิม</b> (ไม่ลบข้อมูลเก่า, รหัสซ้ำจะข้าม)</label>
+     <label style="display:block;margin:6px 0"><input type="radio" name="imode" value="replace" style="min-width:0"> <b style="color:#c5221f">แทนที่ทั้งหมด</b> (ลบรายชื่อเก่าทั้งหมดแล้วใส่ใหม่)</label>
+     <input type="file" id="ifile" accept=".xlsx,.xls,.csv" onchange="readImp(this)" style="margin:6px 0">
+     <div id="iprev" class="muted" style="font-size:14px"></div>
+     <button class="btn" id="ibtn" onclick="doImport()" disabled>นำเข้า</button>
+    </div>
     <input type="text" id="esearch" placeholder="ค้นหา..." oninput="renderEmp()" style="margin:10px 0">
     <div class="tw" style="max-height:420px"><table id="etab"></table></div></div>
    </div>
@@ -269,23 +283,63 @@ function mk(id,cfg){
 var REP=null;
 function loadRep(quiet){
   var f=$('rf').value||today(),t=$('rt').value||f;
-  fetchRange(f,t).then(function(d){REP=d;stamp();drawRep();});
+  fetchRange(f,t).then(function(d){REP=d;stamp();fillPlates();drawRep();});
 }
-function drawRep(){
-  var vm={};VEHS.forEach(function(r){vm[r.v[0]]=r.v[3];});
+function fillPlates(){
+  var cur=$('rplate').value,m={};VEHS.forEach(function(r){m[r.v[0]]=r.v[2]||r.v[0];});REP.trips.forEach(function(x){m[x.veh]=x.plate||x.veh;});
+  $('rplate').innerHTML='<option value="">ทุกคัน</option>'+Object.keys(m).map(function(k){return '<option value="'+esc(k)+'">'+esc(m[k])+'</option>';}).join('');
+  $('rplate').value=cur;
+}
+function repData(){
+  var pv=$('rplate').value;
+  var ts=REP.trips.filter(function(x){return !pv||x.veh===pv;}).sort(function(a,b){return (b.date+b.time).localeCompare(a.date+a.time);});
   var by={};REP.boards.forEach(function(b){(by[b.trip]=by[b.trip]||[]).push(b);});
-  var ts=REP.trips.slice().sort(function(a,b){return (b.date+b.time).localeCompare(a.date+a.time);});
+  Object.keys(by).forEach(function(k){by[k].sort(function(a,b){return a.time.localeCompare(b.time);});});
+  return {ts:ts,by:by};
+}
+function stTxt(x){return x.status==='OPEN'?'กำลังวิ่ง':x.status==='ARRIVED'?'ถึงแล้ว':'ถูกแทนที่';}
+function drawRep(){
+  if(!REP)return;
+  var vm={};VEHS.forEach(function(r){vm[r.v[0]]=r.v[3];});
+  var D=repData(),ts=D.ts,by=D.by,total=0;ts.forEach(function(x){total+=(by[x.id]||[]).length;});
+  $('rsum').textContent='ทั้งหมด '+ts.length+' Trip · คนขึ้นรถรวม '+total+' คน';
+  var open=$('ropen').checked?' open':'';
   $('replist').innerHTML=ts.length?ts.map(function(x){var bs=by[x.id]||[];
     var st=x.status==='OPEN'?'<span class="bd o">กำลังวิ่ง</span>':x.status==='ARRIVED'?'<span class="bd a">ถึงแล้ว '+esc(x.arrTime)+'</span>':'<span class="bd r">ถูกแทนที่</span>';
     return '<div class="trip"><div class="h"><b>'+esc(x.plate)+'</b><span class="muted">'+esc(vm[x.veh]||'')+'</span><span class="chip">'+esc(x.round)+'</span><span>👤 '+esc(x.driver)+'</span><span>🕒 '+esc(x.date.slice(5))+' '+esc(x.time)+'</span>'+st+'<b style="margin-left:auto">'+bs.length+' คน</b></div>'
       +'<div style="margin-top:4px">'+(x.startPhoto?'<a href="'+esc(x.startPhoto)+'" target="_blank">📷 รูปออกรถ</a> ':'')+(x.arrPhoto?'<a href="'+esc(x.arrPhoto)+'" target="_blank">📷 รูปถึงจุดหมาย</a>':'')+'</div>'
-      +(bs.length?'<details><summary>รายชื่อคนขึ้นรถ ('+bs.length+')</summary><table>'+bs.map(function(b){return '<tr><td>'+esc(b.time)+'</td><td>'+esc(b.emp)+'</td><td>'+esc(b.name)+'</td></tr>';}).join('')+'</table></details>':'')+'</div>';}).join(''):'<div class="card muted">ไม่มีข้อมูลในช่วงนี้</div>';
+      +(bs.length?'<details'+open+'><summary>รายชื่อคนขึ้นรถ ('+bs.length+')</summary><table><tr><th>#</th><th>เวลา</th><th>รหัส</th><th>ชื่อ</th></tr>'+bs.map(function(b,i){return '<tr><td>'+(i+1)+'</td><td>'+esc(b.time)+'</td><td>'+esc(b.emp)+'</td><td>'+esc(b.name)+'</td></tr>';}).join('')+'</table></details>':'')+'</div>';}).join(''):'<div class="card muted">ไม่มีข้อมูลในช่วงนี้</div>';
 }
+function flatRows(){
+  var D=repData(),vm={};VEHS.forEach(function(r){vm[r.v[0]]=r.v[3];});
+  var rows=[['TripID','วันที่','เวลาออก','ทะเบียน','สาย','รอบ','พขร.','สถานะ','เวลาถึง','ลำดับที่','เวลาขึ้นรถ','รหัสพนักงาน','ชื่อพนักงาน']];
+  D.ts.slice().reverse().forEach(function(x){var bs=D.by[x.id]||[];var base=[x.id,x.date,x.time,x.plate,vm[x.veh]||'',x.round,x.driver,stTxt(x),x.arrTime];
+    if(!bs.length)rows.push(base.concat(['','','','']));else bs.forEach(function(b,i){rows.push(base.concat([i+1,b.time,b.emp,b.name]));});});
+  return rows;
+}
+function fname(ext){var p=$('rplate').value;return 'bus-trips_'+$('rf').value+'_'+$('rt').value+(p?'_'+p:'')+'.'+ext;}
 function csv(){
-  if(!REP){return;}var rows=[['วันที่','เวลา','ทะเบียน','รอบ','รหัสพนักงาน','ชื่อ']];
-  REP.boards.forEach(function(b){rows.push([b.date,b.time,b.plate,b.round,b.emp,b.name]);});
-  var s='﻿'+rows.map(function(r){return r.map(function(c){return '"'+String(c).replace(/"/g,'""')+'"';}).join(',');}).join('\r\n');
-  var a=document.createElement('a');a.href=URL.createObjectURL(new Blob([s],{type:'text/csv;charset=utf-8'}));a.download='bus-boardings_'+$('rf').value+'_'+$('rt').value+'.csv';a.click();
+  if(!REP)return;
+  var s='﻿'+flatRows().map(function(r){return r.map(function(c){return '"'+String(c).replace(/"/g,'""')+'"';}).join(',');}).join('\r\n');
+  var a=document.createElement('a');a.href=URL.createObjectURL(new Blob([s],{type:'text/csv;charset=utf-8'}));a.download=fname('csv');a.click();
+}
+function xl(){
+  if(!REP){toast('กด "แสดง" ก่อน');return;}
+  var D=repData(),vm={};VEHS.forEach(function(r){vm[r.v[0]]=r.v[3];});
+  var wb=XLSX.utils.book_new();
+  var sum=[['TripID','วันที่','เวลาออก','ทะเบียน','สาย','รอบ','พขร.','สถานะ','เวลาถึง','จำนวนคนขึ้น','รูปออกรถ','รูปถึงจุดหมาย']];
+  D.ts.slice().reverse().forEach(function(x){sum.push([x.id,x.date,x.time,x.plate,vm[x.veh]||'',x.round,x.driver,stTxt(x),x.arrTime,(D.by[x.id]||[]).length,x.startPhoto,x.arrPhoto]);});
+  XLSX.utils.book_append_sheet(wb,XLSX.utils.aoa_to_sheet(sum),'สรุป Trip');
+  XLSX.utils.book_append_sheet(wb,XLSX.utils.aoa_to_sheet(flatRows()),'รายชื่อทุกคน');
+  if($('rsheets').checked){
+    var n=0;D.ts.slice().reverse().forEach(function(x){if(n>=60)return;n++;
+      var rows=[['ทะเบียน',x.plate,'รอบ',x.round,'พขร.',x.driver],['วันที่',x.date,'ออก',x.time,'ถึง',x.arrTime||'-'],[],['ลำดับ','เวลาขึ้นรถ','รหัสพนักงาน','ชื่อ']];
+      (D.by[x.id]||[]).forEach(function(b,i){rows.push([i+1,b.time,b.emp,b.name]);});
+      var nm=(n+'_'+x.plate+'_'+x.date.slice(5)+'_'+x.time.replace(':','')).replace(/[\\\/\?\*\[\]:]/g,'-').slice(0,31);
+      XLSX.utils.book_append_sheet(wb,XLSX.utils.aoa_to_sheet(rows),nm);});
+    if(D.ts.length>60)toast('แยกชีตได้สูงสุด 60 Trip แรก');
+  }
+  XLSX.writeFile(wb,fname('xlsx'));
 }
 
 // ---- vehicles ----
@@ -317,6 +371,39 @@ function renderEmp(){var q=g('esearch').toLowerCase();
     return '<tr><td>'+esc(x.v[0])+'</td><td>'+esc(x.v[1])+'</td><td>'+(x.v[2]==='DRIVER'?'พขร.':'พนักงาน')+'</td><td><button class="btn small ghost" onclick="tog(\'EMPLOYEES\',\''+esc(x.v[0])+'\','+(!a)+')">'+(a?'ปิด':'เปิด')+'</button></td></tr>';}).join('');}
 function addRound(){var n=g('rname');if(!n)return;post({action:'addRound',roundName:n}).then(function(r){if(!r.ok){toast(r.error);return;}$('rname').value='';loadSettings();toast('เพิ่มรอบแล้ว');});}
 function addEmp(){var id=g('eid');if(!id){toast('กรอกรหัส');return;}post({action:'addEmployee',employeeId:id,name:g('ename'),role:$('erole').value}).then(function(r){if(!r.ok){toast(r.error);return;}['eid','ename'].forEach(function(k){$(k).value='';});loadSettings();toast('เพิ่มแล้ว');});}
+
+// ---- employee import ----
+var IMP=[];
+function tpl(){
+  var wb=XLSX.utils.book_new();
+  XLSX.utils.book_append_sheet(wb,XLSX.utils.aoa_to_sheet([['รหัสพนักงาน','ชื่อ','หน้าที่ (PASSENGER หรือ DRIVER)'],['TH061378','Madee','PASSENGER'],['TH060943','Pan HR','PASSENGER'],['TH061703','เก้า HR','PASSENGER']]),'Employees');
+  XLSX.utils.book_append_sheet(wb,XLSX.utils.aoa_to_sheet([['วิธีใช้'],['1. ลบแถวตัวอย่างแล้วกรอกรายชื่อจริง แถวละ 1 คน'],['2. คอลัมน์ "หน้าที่" ใส่ PASSENGER (พนักงานทั่วไป) หรือ DRIVER (พขร.) ถ้าเว้นว่างจะถือเป็น PASSENGER'],['3. อัปโหลดที่หน้าตั้งค่า เลือก "เพิ่มจากของเดิม" หรือ "แทนที่ทั้งหมด"']]),'วิธีใช้');
+  XLSX.writeFile(wb,'template_employees.xlsx');
+}
+function readImp(inp){
+  var f=inp.files&&inp.files[0];IMP=[];$('ibtn').disabled=true;if(!f)return;
+  var fr=new FileReader();fr.onload=function(){
+    try{
+      var wb=XLSX.read(new Uint8Array(fr.result),{type:'array',codepage:65001});
+      var rows=XLSX.utils.sheet_to_json(wb.Sheets[wb.SheetNames[0]],{header:1,defval:''});
+      if(rows.length&&/รหัส|id/i.test(String(rows[0][0])))rows.shift();
+      rows.forEach(function(r){var id=String(r[0]).trim();if(!id)return;var ro=String(r[2]||'').toUpperCase();
+        IMP.push({id:id,name:String(r[1]).trim(),role:(ro.indexOf('DRIVER')>=0||/พขร|คนขับ/.test(ro))?'DRIVER':'PASSENGER'});});
+      $('iprev').textContent='อ่านได้ '+IMP.length+' รายการ'+(IMP.length?' (ตัวอย่าง: '+IMP.slice(0,3).map(function(x){return x.id+' '+x.name;}).join(', ')+')':'');
+      $('ibtn').disabled=!IMP.length;
+    }catch(e){$('iprev').textContent='อ่านไฟล์ไม่ได้ กรุณาใช้ไฟล์จาก Template';}
+  };fr.readAsArrayBuffer(f);
+}
+function doImport(){
+  var mode=document.querySelector('input[name=imode]:checked').value;
+  if(mode==='replace'&&!confirm('ยืนยันแทนที่ทั้งหมด?\nรายชื่อพนักงานเดิมทั้งหมดจะถูกลบ แล้วใส่รายชื่อใหม่ '+IMP.length+' รายการ (ย้อนกลับไม่ได้)'))return;
+  $('ibtn').disabled=true;$('ibtn').textContent='กำลังนำเข้า...';
+  post({action:'importEmployees',mode:mode,rows:IMP}).then(function(r){
+    $('ibtn').textContent='นำเข้า';
+    if(!r.ok){toast(r.error);$('ibtn').disabled=false;return;}
+    toast('นำเข้าแล้ว '+r.added+' รายการ'+(r.skipped?' · ข้าม '+r.skipped:''));IMP=[];$('ifile').value='';$('iprev').textContent='';loadSettings();
+  }).catch(function(){$('ibtn').textContent='นำเข้า';$('ibtn').disabled=false;toast('เชื่อมต่อไม่ได้');});
+}
 
 if(KEY){getA({action:'admin_vehicles'}).then(function(r){if(r.ok)enter(r);});}
 </script></body></html>
