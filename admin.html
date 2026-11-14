@@ -36,9 +36,11 @@
   .msg.err { background:#fce8e6; color:var(--err); }
   .toast { position:fixed; bottom:18px; left:50%; transform:translateX(-50%); background:#1d2433; color:#fff; padding:10px 16px; border-radius:8px; font-size:14px; }
   #printArea { display:none; }
-  .qr-grid { display:grid; grid-template-columns:repeat(3,1fr); gap:8mm; }
-  .qr-card { border:1px solid #000; padding:5mm; text-align:center; break-inside:avoid; font-size:12pt; }
-  .qr-card img { width:50mm; height:50mm; }
+  .qr-grid { display:grid; grid-template-columns:repeat(2,1fr); gap:10mm; }
+  .qr-card { border:2px solid #000; padding:8mm; text-align:center; break-inside:avoid; font-size:18pt; line-height:1.4; }
+  .qr-card img { width:110mm; height:110mm; display:block; margin:0 auto 4mm; }
+  .qr-card .plate { font-size:26pt; font-weight:700; }
+  @page { size:A4; margin:10mm; }
   @media print {
     body > *:not(#printArea) { display:none !important; }
     #printArea { display:block !important; }
@@ -250,6 +252,7 @@
     img.alt = id;
     var p1 = document.createElement('div');
     p1.textContent = 'ทะเบียน ' + plate;
+    p1.className = 'plate';
     var p2 = document.createElement('div');
     p2.textContent = 'สาย ' + route;
     var p3 = document.createElement('div');
