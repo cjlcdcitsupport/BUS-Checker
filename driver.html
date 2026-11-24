@@ -174,7 +174,7 @@ function render(){
     $('chips').innerHTML='<span class="chip">'+t('roundL')+': '+esc(o.roundName)+'</span><span class="chip">'+t('driverL')+': '+esc(o.driverName)+'</span><span class="chip">'+t('startL')+' '+esc(o.startTime)+'</span>'
       +(o.departTime?'<span class="chip red">'+t('depL')+' '+esc(o.departTime)+'</span>':'')
       +(sc.depart||sc.arrive?'<span class="chip">'+t('schedL')+' '+esc(sc.depart||'-')+' → '+esc(sc.arrive||'-')+'</span>':'');
-    $('depBox').classList.toggle('hidden',!!o.departTime);$('arrBox').classList.toggle('hidden',!o.departTime);}
+    $('depBox').classList.add('hidden');$('arrBox').classList.remove('hidden');} /* ตัดขั้น 'ออกเดินทาง': คนขับกด เริ่มรอบวิ่ง → ถึงจุดหมาย */
   else renderRounds();
 }
 function newTrip(){FORCE=true;render();}
