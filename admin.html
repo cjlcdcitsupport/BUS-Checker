@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="th"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1"><title>Bus Checker Admin</title><link rel="preconnect" href="https://fonts.googleapis.com"><link href="https://fonts.googleapis.com/css2?family=Prompt:wght@400;500;600;700&display=swap" rel="stylesheet"><script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script><script src="https://cdn.jsdelivr.net/npm/qrcode-generator@1.4.4/qrcode.js"></script><script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script><style>
+<html lang="th"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1"><title>Bus Checker Admin</title><link rel="preconnect" href="https://fonts.googleapis.com"><link href="https://fonts.googleapis.com/css2?family=Prompt:wght@400;500;600;700&display=swap" rel="stylesheet"><script src="https://cdn.jsdelivr.net/npm/exceljs@4.4.0/dist/exceljs.min.js"></script><script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script><script src="https://cdn.jsdelivr.net/npm/qrcode-generator@1.4.4/qrcode.js"></script><script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script><style>
 :root{--brand:#1D4DB5;--brand2:#2563D8;--ok:#1F9D63;--red:#D32F2F;--bg:#E4F0FF;--ink:#14284B;--muted:#4A5B78;--line:#C7D3E8;--sh:#2563d826}
 *{box-sizing:border-box}
 body{margin:0;font-family:'Prompt','Sarabun','Noto Sans Thai','Noto Sans Myanmar',system-ui,sans-serif;background:var(--bg);color:var(--ink);font-size:17px;line-height:1.55}
@@ -92,10 +92,21 @@ input[type=text]:focus,input[type=password]:focus{border-color:var(--brand2);box
 .frm input,.frm select,#esearch{padding:9px 10px;font-size:15px;border:1px solid #cfd6e4;border-radius:8px;min-width:130px;width:auto}
 #esearch{width:100%}
 .tw{overflow:auto}table{width:100%;border-collapse:collapse}th,td{text-align:left;padding:8px 10px;border-bottom:1px solid #e6e9f0;white-space:nowrap;font-size:15px}th{color:var(--muted);font-size:13px;background:#f8f9fc;position:sticky;top:0}
-.btn.danger{background:#fff;color:#D32F2F;border:1px solid #D32F2F}.bd{padding:2px 10px;border-radius:12px;font-size:13px}.bd.o{background:#e8f5ec;color:var(--ok)}.bd.a{background:#e3ebfa;color:var(--brand)}.bd.r{background:#eee;color:#777}
+.btn.danger{background:#fff;color:#D32F2F;border:1px solid #D32F2F}.bd{padding:2px 10px;border-radius:12px;font-size:13px}.bd.o{background:#e8f5ec;color:var(--ok)}.bd.a{background:#e3ebfa;color:var(--brand)}.bd.r{background:#eee;color:#777}.bd.late{background:#FDE3E3;color:#D32F2F;font-weight:600}
 .trip{background:#fff;border-radius:12px;padding:12px 14px;margin-bottom:8px;box-shadow:0 1px 3px #0001}
 .trip .h{display:flex;gap:10px;flex-wrap:wrap;align-items:center}.trip .h b{font-size:17px}
 .trip details{margin-top:6px}.trip summary{cursor:pointer;color:var(--brand2)}.trip a{color:var(--brand2)}
+#exm{position:fixed;inset:0;background:#14284b88;z-index:40;display:flex;align-items:flex-start;justify-content:center;padding:30px 12px;overflow:auto}#exm.hidden{display:none}
+.xbox{background:#fff;border-radius:20px;padding:22px 24px;max-width:820px;width:100%;box-shadow:0 20px 60px #0a193c66;animation:fade .2s}
+.xinfo{display:flex;gap:8px;flex-wrap:wrap;margin:14px 0}.xinfo span{background:#E4F0FF;border-radius:999px;padding:4px 14px;font-size:14px}
+.xcards{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:14px}
+.xc{position:relative;text-align:left;border:1.5px solid #CBD8EE;background:#fff;border-radius:16px;padding:16px;cursor:pointer;font-family:inherit;color:inherit}
+.xc.on{border:2.5px solid #1D4DB5;background:#F3F8FF}.xc b{display:block;font-size:17px;margin-top:10px}.xc small{color:var(--muted);font-size:12px}.xc p{font-size:13px;line-height:1.5;margin:8px 0 0}
+.xi{display:flex;width:42px;height:42px;border-radius:12px;color:#fff;font-weight:700;align-items:center;justify-content:center;font-size:14px}
+.xt{position:absolute;top:-11px;right:12px;background:#D32F2F;color:#fff;border-radius:999px;padding:2px 10px;font-size:12px;font-weight:600}
+.xopt{margin-top:16px;background:#F3F8FF;border-radius:14px;padding:12px 16px;display:flex;flex-wrap:wrap;gap:10px 24px;font-size:14px;align-items:center}
+.xopt label{display:inline-flex;gap:6px;align-items:center}.xopt label.hidden{display:none}.xopt input{min-width:0;width:auto}
+.sch{display:flex;gap:4px;align-items:center}.sch input{padding:5px 6px;font-size:14px;border:1px solid #cfd6e4;border-radius:6px;font-family:inherit;width:118px}
 #topv{background:#FDE3E3;border-left:5px solid #D32F2F;color:#14284B}
 #printArea{display:none}
 @media print{body>*:not(#printArea){display:none!important}#printArea{display:block!important}
@@ -136,11 +147,22 @@ input[type=text]:focus,input[type=password]:focus{border-color:var(--brand2);box
     <label>จากวันที่<input type="date" id="rf"></label><label>ถึงวันที่<input type="date" id="rt"></label>
     <label>ทะเบียนรถ<select id="rplate" onchange="drawRep()"><option value="">ทุกคัน</option></select></label>
     <button class="btn" onclick="loadRep()">แสดง</button>
-    <button class="btn" style="background:#1e8e3e" onclick="xl()">⬇ Excel แยก Trip</button><button class="btn ghost" onclick="csv()">⬇ CSV</button></div>
-    <div style="margin-top:10px;font-size:14px"><label style="display:inline-flex;flex-direction:row;gap:6px;align-items:center;color:inherit"><input type="checkbox" id="rsheets" style="min-width:0"> แยกชีตตาม Trip (ไฟล์ Excel: 1 Trip = 1 ชีต)</label>
-    &nbsp; <label style="display:inline-flex;flex-direction:row;gap:6px;align-items:center;color:inherit"><input type="checkbox" id="ropen" checked onchange="drawRep()" style="min-width:0"> กางรายชื่อคนขึ้นรถทุก Trip</label></div>
+    <button class="btn" style="background:#1e8e3e" onclick="openExport()">⬇ Export รายงาน</button><button class="btn ghost" onclick="csv()">⬇ CSV</button></div>
+    <div style="margin-top:10px;font-size:14px"><label style="display:inline-flex;flex-direction:row;gap:6px;align-items:center;color:inherit"><input type="checkbox" id="ropen" checked onchange="drawRep()" style="min-width:0"> กางรายชื่อคนขึ้นรถทุก Trip</label></div>
     <div id="rsum" class="muted" style="margin-top:8px"></div></div>
    <div id="replist"></div>
+   <div id="exm" class="hidden"><div class="xbox">
+    <div style="display:flex;justify-content:space-between;align-items:flex-start;gap:10px"><div><h3 style="font-size:21px;margin:0">Export รายงาน</h3><div class="muted" style="font-size:14px">เลือกรูปแบบ ไฟล์พร้อมส่งหัวหน้าหรือเก็บเป็นหลักฐานได้ทันที</div></div><button class="btn small ghost" onclick="closeExport()" aria-label="ปิด">✕</button></div>
+    <div class="xinfo" id="xinfo"></div>
+    <div class="xcards">
+     <button class="xc" id="xc_xl" onclick="pickFmt('xl')"><span class="xt">แนะนำ</span><span class="xi" style="background:#1E8E4E">X</span><b>Excel Report Pack</b><small>.xlsx</small><p>ชีต Summary (KPI + กราฟ) · Trips · Boardings · แยกชีตต่อ Trip ได้ เอาไปกรอง/Pivot ต่อ</p></button>
+     <button class="xc" id="xc_sum" onclick="pickFmt('sum')"><span class="xi" style="background:#D32F2F">PDF</span><b>รายงานสรุป</b><small>PDF · A4</small><p>KPI กราฟ ความตรงเวลา สรุปตามรอบ/ตามรถ รายการ Trip เหมาะส่งผู้บริหาร</p></button>
+     <button class="xc" id="xc_trip" onclick="pickFmt('trip')"><span class="xi" style="background:#2B6BE6">PDF</span><b>ใบรายงานรายรอบ</b><small>PDF · 1 Trip = 1 หน้า</small><p>เวลาเริ่ม/ออก/ถึง เทียบตาราง รูปออกรถ รูปถึงจุดหมาย รายชื่อคนขึ้นรถ</p></button>
+    </div>
+    <div class="xopt"><label id="xo_sheets"><input type="checkbox" id="xsheets"> แยกชีตตาม Trip (1 Trip = 1 ชีต)</label><label id="xo_photo"><input type="checkbox" id="xphoto" checked> ใส่รูปถ่ายในไฟล์</label><span class="muted">ฟอนต์ TH Sarabun New · ตรงเวลา = ถึงไม่ช้ากว่าตารางเกิน 5 นาที</span></div>
+    <div style="display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap;margin-top:16px"><span id="xprog" class="muted" style="font-size:14px"></span>
+     <div style="display:flex;gap:8px;margin-left:auto"><button class="btn ghost" onclick="closeExport()">ยกเลิก</button><button class="btn" id="xgo" onclick="doExport()">ดาวน์โหลด Excel</button></div></div>
+   </div></div>
   </section>
 
   <section id="t_veh" class="hidden">
@@ -248,7 +270,7 @@ document.getElementById('tabs').onclick=function(e){var b=e.target.closest('butt
 document.getElementById('rng').onclick=function(e){var b=e.target.closest('button');if(!b)return;RANGE=+b.getAttribute('data-n');
   Array.prototype.forEach.call(this.children,function(x){x.classList.toggle('on',x===b);});refresh();};
 
-function rowT(r){return {id:r[0],date:r[2],time:r[3],veh:r[4],plate:r[5],driver:r[7],status:r[8],arrTime:r[10],arrPhoto:r[11],round:r[13],startPhoto:r[14]};}
+function rowT(r){return {id:r[0],date:r[2],time:r[3],veh:r[4],plate:r[5],driver:r[7],status:r[8],arrTime:r[10],arrPhoto:r[11],arrPhotoId:r[12],round:r[13],startPhoto:r[14],startPhotoId:r[15],departTime:r[17]||''};}
 function rowB(r){return {id:r[0],date:r[2],time:r[3],trip:r[4],veh:r[5],plate:r[6],emp:r[7],name:r[8],round:r[9]};}
 function fetchRange(f,t){return getA({action:'admin_range',from:f,to:t}).then(function(r){if(!r.ok)throw new Error(r.error);return {trips:r.trips.map(rowT),boards:r.boardings.map(rowB),now:r.now};});}
 function stamp(){var d=new Date();$('upd').textContent=d.toLocaleTimeString('th-TH',{timeZone:'Asia/Bangkok'});}
@@ -319,7 +341,7 @@ function mk(id,cfg){
 var REP=null;
 function loadRep(quiet){
   var f=$('rf').value||today(),t=$('rt').value||f;
-  fetchRange(f,t).then(function(d){REP=d;stamp();fillPlates();drawRep();});
+  Promise.all([fetchRange(f,t),ensureRounds()]).then(function(a){REP=a[0];stamp();fillPlates();drawRep();});
 }
 function fillPlates(){
   var cur=$('rplate').value,m={};VEHS.forEach(function(r){m[r.v[0]]=r.v[2]||r.v[0];});REP.trips.forEach(function(x){m[x.veh]=x.plate||x.veh;});
@@ -337,12 +359,13 @@ function stTxt(x){return x.status==='OPEN'?'กำลังวิ่ง':x.statu
 function drawRep(){
   if(!REP)return;
   var vm={};VEHS.forEach(function(r){vm[r.v[0]]=r.v[3];});
-  var D=repData(),ts=D.ts,by=D.by,total=0;ts.forEach(function(x){total+=(by[x.id]||[]).length;});
+  var D=repData(),ts=D.ts,by=D.by,total=0,SC=schedMap();ts.forEach(function(x){total+=(by[x.id]||[]).length;});
   $('rsum').textContent='ทั้งหมด '+ts.length+' Trip · คนขึ้นรถรวม '+total+' คน';
   var open=$('ropen').checked?' open':'';
   $('replist').innerHTML=ts.length?ts.map(function(x){var bs=by[x.id]||[];
     var st=x.status==='OPEN'?'<span class="bd o">กำลังวิ่ง</span>':x.status==='ARRIVED'?'<span class="bd a">ถึงแล้ว '+esc(x.arrTime)+'</span>':'<span class="bd r">ถูกแทนที่</span>';
     return '<div class="trip"><div class="h"><b>'+esc(x.plate)+'</b><span class="muted">'+esc(vm[x.veh]||'')+'</span><span class="chip">'+esc(x.round)+'</span><span>👤 '+esc(x.driver)+'</span><span>🕒 '+esc(x.date.slice(5))+' '+esc(x.time)+'</span>'+st+'<b style="margin-left:auto">'+bs.length+' คน</b></div>'
+      +(function(){var c=calc(x,bs,SC);return '<div style="margin-top:4px;font-size:14px;display:flex;gap:6px 14px;flex-wrap:wrap"><span>🚌 ออกเดินทาง <b>'+esc(x.departTime||(c.est?c.dep+' (ประมาณ)':'-'))+'</b></span><span>รอรับคน <b>'+mtxt(c.wait)+'</b></span><span>เดินทาง <b>'+mtxt(c.travel)+'</b></span>'+(c.sd||c.sa?'<span class="muted">ตาราง '+esc((c.sd||'-')+' → '+(c.sa||'-'))+'</span>':'')+'<span class="'+(c.onTime===true?'bd o':c.onTime===false?'bd late':'muted')+'">'+esc(c.res)+'</span></div>';})()
       +'<div style="margin-top:4px">'+(x.startPhoto?'<a href="'+esc(x.startPhoto)+'" target="_blank">📷 รูปออกรถ</a> ':'')+(x.arrPhoto?'<a href="'+esc(x.arrPhoto)+'" target="_blank">📷 รูปถึงจุดหมาย</a>':'')+'</div>'
       +(bs.length?'<details'+open+'><summary>รายชื่อคนขึ้นรถ ('+bs.length+')</summary><table><tr><th>#</th><th>เวลา</th><th>รหัส</th><th>ชื่อ</th></tr>'+bs.map(function(b,i){return '<tr><td>'+(i+1)+'</td><td>'+esc(b.time)+'</td><td>'+esc(b.emp)+'</td><td>'+esc(b.name)+'</td></tr>';}).join('')+'</table></details>':'')+'</div>';}).join(''):'<div class="card muted">ไม่มีข้อมูลในช่วงนี้</div>';
 }
@@ -359,24 +382,228 @@ function csv(){
   var s='﻿'+flatRows().map(function(r){return r.map(function(c){return '"'+String(c).replace(/"/g,'""')+'"';}).join(',');}).join('\r\n');
   var a=document.createElement('a');a.href=URL.createObjectURL(new Blob([s],{type:'text/csv;charset=utf-8'}));a.download=fname('csv');a.click();
 }
-function xl(){
-  if(!REP){toast('กด "แสดง" ก่อน');return;}
-  var D=repData(),vm={};VEHS.forEach(function(r){vm[r.v[0]]=r.v[3];});
-  var wb=XLSX.utils.book_new();
-  var sum=[['TripID','วันที่','เวลาออก','ทะเบียน','สาย','รอบ','พขร.','สถานะ','เวลาถึง','จำนวนคนขึ้น','รูปออกรถ','รูปถึงจุดหมาย']];
-  D.ts.slice().reverse().forEach(function(x){sum.push([x.id,x.date,x.time,x.plate,vm[x.veh]||'',x.round,x.driver,stTxt(x),x.arrTime,(D.by[x.id]||[]).length,x.startPhoto,x.arrPhoto]);});
-  XLSX.utils.book_append_sheet(wb,XLSX.utils.aoa_to_sheet(sum),'สรุป Trip');
-  XLSX.utils.book_append_sheet(wb,XLSX.utils.aoa_to_sheet(flatRows()),'รายชื่อทุกคน');
-  if($('rsheets').checked){
-    var n=0;D.ts.slice().reverse().forEach(function(x){if(n>=60)return;n++;
-      var rows=[['ทะเบียน',x.plate,'รอบ',x.round,'พขร.',x.driver],['วันที่',x.date,'ออก',x.time,'ถึง',x.arrTime||'-'],[],['ลำดับ','เวลาขึ้นรถ','รหัสพนักงาน','ชื่อ']];
-      (D.by[x.id]||[]).forEach(function(b,i){rows.push([i+1,b.time,b.emp,b.name]);});
-      var nm=(n+'_'+x.plate+'_'+x.date.slice(5)+'_'+x.time.replace(':','')).replace(/[\\\/\?\*\[\]:]/g,'-').slice(0,31);
-      XLSX.utils.book_append_sheet(wb,XLSX.utils.aoa_to_sheet(rows),nm);});
-    if(D.ts.length>60)toast('แยกชีตได้สูงสุด 60 Trip แรก');
-  }
-  XLSX.writeFile(wb,fname('xlsx'));
+// ---- timing: start trip -> depart -> arrive, compared with round schedule ----
+var TOL=5;
+function toMin(s){var m=/^(\d{1,2}):(\d{2})/.exec(String(s||''));return m?(+m[1])*60+(+m[2]):null;}
+function dmin(a,b){var x=toMin(a),y=toMin(b);if(x==null||y==null)return null;var d=y-x;if(d<-720)d+=1440;if(d>720)d-=1440;return d;}
+function schedMap(){var m={};RNDS.forEach(function(r){m[r.v[1]]={d:r.v[5]||'',a:r.v[6]||''};});return m;}
+function ensureRounds(){return RNDS.length?Promise.resolve():getA({action:'admin_rounds'}).then(function(r){if(r.ok)RNDS=r.rows;});}
+function calc(x,bs,SC){
+  var last=bs.length?bs[bs.length-1].time:'',dep=x.departTime||'',est=false;
+  if(!dep&&last&&x.arrTime){dep=last;est=true;}
+  var sc=SC[x.round]||{d:'',a:''};
+  var o={dep:dep,est:est,wait:x.departTime?dmin(x.time,x.departTime):null,travel:(dep&&x.arrTime)?dmin(dep,x.arrTime):null,
+    sd:sc.d,sa:sc.a,depLate:(sc.d&&x.departTime)?dmin(sc.d,x.departTime):null,arrLate:(sc.a&&x.arrTime)?dmin(sc.a,x.arrTime):null};
+  o.res=o.arrLate==null?(sc.a?(x.status==='OPEN'?'ยังไม่ถึง':'-'):'ไม่มีตาราง'):(o.arrLate<=TOL?'ตรงเวลา':'ถึงช้า '+o.arrLate+' นาที');
+  o.onTime=o.arrLate==null?null:o.arrLate<=TOL;
+  return o;
 }
+function mtxt(n){return n==null?'-':n+' นาที';}
+function late(n){return n==null?'-':n>0?'ช้า '+n+' นาที':n<0?'เร็ว '+(-n)+' นาที':'ตรงเวลา';}
+
+// ---- export ----
+var LOGO_SRC=(LOGO.match(/src="([^"]+)"/)||[])[1]||'';
+var XFMT='xl';
+function openExport(){
+  if(!REP){toast('กด "แสดง" ก่อน');return;}
+  var D=repData(),n=0;D.ts.forEach(function(x){n+=(D.by[x.id]||[]).length;});
+  var p=$('rplate');$('xinfo').innerHTML=['<span>'+esc($('rf').value)+' – '+esc($('rt').value)+'</span>','<span>'+(p.value?'ทะเบียน '+esc(p.options[p.selectedIndex].text):'ทุกคัน')+'</span>','<span>'+D.ts.length+' Trip</span>','<span>คนขึ้นรถ '+n+' คน</span>'].join('');
+  pickFmt(XFMT);$('xprog').textContent='';$('exm').classList.remove('hidden');
+}
+function closeExport(){$('exm').classList.add('hidden');}
+function pickFmt(f){XFMT=f;['xl','sum','trip'].forEach(function(k){$('xc_'+k).classList.toggle('on',k===f);});
+  $('xo_sheets').classList.toggle('hidden',f!=='xl');$('xo_photo').classList.toggle('hidden',f!=='trip');
+  $('xgo').textContent=f==='xl'?'ดาวน์โหลด Excel':'เปิด PDF (พิมพ์ / บันทึกเป็น PDF)';}
+function doExport(){
+  if(XFMT==='xl'){$('xgo').disabled=true;$('xprog').textContent='กำลังสร้างไฟล์ Excel...';
+    ensureRounds().then(excelPack).then(function(){$('xprog').textContent='ดาวน์โหลดแล้ว';closeExport();})
+      .catch(function(e){$('xprog').textContent='สร้างไฟล์ไม่สำเร็จ: '+(e&&e.message||e);}).then(function(){$('xgo').disabled=false;});return;}
+  var D=repData();
+  if(XFMT==='trip'&&$('xphoto').checked&&D.ts.length>60&&!confirm('มี '+D.ts.length+' Trip การโหลดรูปจะใช้เวลานาน ทำต่อไหม?'))return;
+  var w=window.open('','_blank');if(!w){toast('เบราว์เซอร์บล็อกหน้าต่างใหม่ กรุณาอนุญาต Pop-up');return;}
+  w.document.write('<p style="font-family:sans-serif;padding:30px">กำลังสร้างรายงาน...</p>');
+  $('xgo').disabled=true;
+  ensureRounds().then(function(){return XFMT==='sum'?pdfSummary():pdfTrips();}).then(function(html){
+    w.document.open();w.document.write(html);w.document.close();$('xprog').textContent='';closeExport();
+  }).catch(function(e){w.close();$('xprog').textContent='สร้างรายงานไม่สำเร็จ: '+(e&&e.message||e);}).then(function(){$('xgo').disabled=false;});
+}
+function xd(){
+  var D=repData(),SC=schedMap(),vm={};VEHS.forEach(function(r){vm[r.v[0]]=r.v[3];});
+  var ts=D.ts.slice().reverse(),rows=ts.map(function(x){var bs=D.by[x.id]||[];return {x:x,bs:bs,c:calc(x,bs,SC),route:vm[x.veh]||''};});
+  var nb=0,vs={},tr=[],wt=[],ok=0,known=0;rows.forEach(function(r){nb+=r.bs.length;vs[r.x.veh]=1;if(r.c.travel!=null)tr.push(r.c.travel);if(r.c.wait!=null)wt.push(r.c.wait);if(r.c.onTime!=null){known++;if(r.c.onTime)ok++;}});
+  function avg(a){return a.length?Math.round(a.reduce(function(s,v){return s+v;},0)/a.length):null;}
+  var p=$('rplate');
+  var K={trips:rows.length,boards:nb,vehs:Object.keys(vs).length,per:rows.length?(nb/rows.length).toFixed(1):'0',travel:avg(tr),wait:avg(wt),ontime:known?Math.round(ok*100/known)+'%':'-',known:known,ok:ok,
+    closed:rows.length?Math.round(rows.filter(function(r){return r.x.status==='ARRIVED';}).length*100/rows.length)+'%':'-'};
+  var byR={},byV={},hrs=[];for(var i=0;i<24;i++)hrs.push(0);
+  rows.forEach(function(r){var a=byR[r.x.round]=byR[r.x.round]||{t:0,n:0,ok:0,k:0,tr:[]};a.t++;a.n+=r.bs.length;if(r.c.onTime!=null){a.k++;if(r.c.onTime)a.ok++;}if(r.c.travel!=null)a.tr.push(r.c.travel);
+    var b=byV[r.x.plate||r.x.veh]=byV[r.x.plate||r.x.veh]||{t:0,n:0,ok:0,k:0,tr:[],route:r.route};b.t++;b.n+=r.bs.length;if(r.c.onTime!=null){b.k++;if(r.c.onTime)b.ok++;}if(r.c.travel!=null)b.tr.push(r.c.travel);
+    r.bs.forEach(function(b2){var h=parseInt(String(b2.time).slice(0,2),10);if(h>=0&&h<24)hrs[h]++;});});
+  var order=RNDS.map(function(r){return r.v[1];});
+  var rk=Object.keys(byR).sort(function(a,b){var x=order.indexOf(a),y=order.indexOf(b);return (x<0?99:x)-(y<0?99:y);});
+  return {rows:rows,K:K,byR:byR,rk:rk,byV:byV,hrs:hrs,avg:avg,f:$('rf').value,t:$('rt').value,plate:p.value?p.options[p.selectedIndex].text:'ทุกคัน',SC:SC};
+}
+function chartPng(type,labels,sets,w,h,opt){
+  var cv=document.createElement('canvas');cv.width=w;cv.height=h;cv.style.width=w+'px';cv.style.height=h+'px';
+  var c=new Chart(cv,{type:type,data:{labels:labels,datasets:sets},options:Object.assign({responsive:false,animation:false,devicePixelRatio:2,
+    plugins:{legend:{display:sets.length>1||type==='doughnut',position:'bottom',labels:{font:{family:'Sarabun',size:13}}}},
+    scales:type==='doughnut'?{}:{x:{ticks:{font:{family:'Sarabun',size:12}},grid:{display:false}},y:{beginAtZero:true,ticks:{precision:0,font:{family:'Sarabun',size:12}}}}},opt||{})});
+  var u=c.toBase64Image('image/png',1);c.destroy();return u;
+}
+function charts(E,w,h){
+  var hl=[],hv=[],a=-1,b=-1;E.hrs.forEach(function(v,i){if(v){if(a<0)a=i;b=i;}});if(a<0){a=6;b=18;}
+  for(var i=a;i<=b;i++){hl.push(('0'+i).slice(-2)+':00');hv.push(E.hrs[i]);}
+  var vk=Object.keys(E.byV);
+  return {
+    hour:chartPng('bar',hl,[{label:'คนขึ้นรถ',data:hv,backgroundColor:'#2563D8',borderRadius:4}],w,h),
+    round:chartPng('bar',E.rk,[{label:'คนขึ้นรถ',data:E.rk.map(function(k){return E.byR[k].n;}),backgroundColor:['#2563D8','#D32F2F','#5BB8F0','#1239A0','#F28B82','#9AB8F5'],borderRadius:4}],w,h),
+    veh:chartPng('bar',vk,[{label:'คนขึ้นรถ',data:vk.map(function(k){return E.byV[k].n;}),backgroundColor:'#1D4DB5',borderRadius:4},{label:'Trip',data:vk.map(function(k){return E.byV[k].t;}),backgroundColor:'#5BB8F0',borderRadius:4}],w,h),
+    ontime:chartPng('doughnut',['ตรงเวลา','สาย','ไม่มีตาราง/ยังไม่ถึง'],[{data:[E.K.ok,E.K.known-E.K.ok,E.K.trips-E.K.known],backgroundColor:['#1F9D63','#D32F2F','#C9D3E6']}],w,h,{cutout:'58%'})
+  };
+}
+function xfname(ext){var p=$('rplate').value;return 'BusChecker_'+$('rf').value+'_'+$('rt').value+(p?'_'+String($('rplate').options[$('rplate').selectedIndex].text).replace(/[\\\/:*?"<>|\s]/g,''):'')+'.'+ext;}
+
+// Excel Report Pack (ExcelJS): Summary dashboard + Trips + Boardings (+ 1 sheet per trip)
+function excelPack(){
+  var E=xd(),C=charts(E,560,300),wb=new ExcelJS.Workbook(),FN='TH Sarabun New';
+  wb.creator='Bus Checker · Created by Nutdanai Pathsith';
+  var BL='FF1D4DB5',LB='FFE4F0FF',RD='FFD32F2F',GR='FF1F9D63',ALT='FFF3F8FF';
+  function fill(c,argb){c.fill={type:'pattern',pattern:'solid',fgColor:{argb:argb}};}
+  function border(c){c.border={top:{style:'thin',color:{argb:'FFD5DCE8'}},bottom:{style:'thin',color:{argb:'FFD5DCE8'}},left:{style:'thin',color:{argb:'FFD5DCE8'}},right:{style:'thin',color:{argb:'FFD5DCE8'}}};}
+  function head(ws,r,c1,vals){vals.forEach(function(v,i){var c=ws.getRow(r).getCell(c1+i);c.value=v;fill(c,BL);c.font={bold:true,color:{argb:'FFFFFFFF'},size:14};c.alignment={vertical:'middle',horizontal:'center',wrapText:true};border(c);});ws.getRow(r).height=24;}
+  function body(ws,r,c1,vals,alt){vals.forEach(function(v,i){var c=ws.getRow(r).getCell(c1+i);c.value=v;if(alt)fill(c,ALT);border(c);c.alignment={vertical:'middle'};});}
+  function fonts(ws){ws.eachRow({includeEmpty:true},function(row){row.eachCell({includeEmpty:false},function(c){var f=c.font||{};c.font=Object.assign({},f,{name:FN,size:f.size||14});});});}
+  function title(ws,cols,t1,t2){ws.mergeCells(1,1,1,cols);var c=ws.getCell(1,1);c.value=t1;fill(c,BL);c.font={bold:true,size:22,color:{argb:'FFFFFFFF'}};c.alignment={vertical:'middle',indent:1};ws.getRow(1).height=36;
+    ws.mergeCells(2,1,2,cols);c=ws.getCell(2,1);c.value=t2;fill(c,BL);c.font={size:14,color:{argb:'FFFFFFFF'}};c.alignment={vertical:'middle',indent:1};ws.getRow(2).height=22;}
+  var sub='ช่วงวันที่ '+E.f+' ถึง '+E.t+' · '+E.plate+' · ส่งออกเมื่อ '+new Date().toLocaleString('th-TH',{timeZone:'Asia/Bangkok'});
+
+  // Summary
+  var S=wb.addWorksheet('Summary',{views:[{showGridLines:false}],pageSetup:{paperSize:9,orientation:'portrait',fitToPage:true,fitToWidth:1,fitToHeight:0}});
+  S.columns=[1,2,3,4,5,6,7,8].map(function(){return {width:14};});
+  title(S,8,'รายงานการเดินรถรับ-ส่งพนักงาน CDC',sub);
+  var KP=[[E.K.trips,'จำนวน Trip',BL],[E.K.boards,'คนขึ้นรถรวม',BL],[E.K.vehs,'รถที่วิ่ง',BL],[E.K.per,'เฉลี่ยคน/Trip',BL],
+    [E.K.travel==null?'-':E.K.travel+' นาที','เวลาเดินทางเฉลี่ย',RD],[E.K.wait==null?'-':E.K.wait+' นาที','รอรับคนเฉลี่ย',BL],[E.K.ontime,'ถึงตรงเวลา (±'+TOL+' นาที)',GR],[E.K.closed,'Trip ที่ปิดครบ',BL]];
+  KP.forEach(function(k,i){var r=4+Math.floor(i/4)*3,c=1+(i%4)*2;S.mergeCells(r,c,r,c+1);S.mergeCells(r+1,c,r+1,c+1);
+    var v=S.getCell(r,c);v.value=k[0];v.font={bold:true,size:24,color:{argb:k[2]}};v.alignment={horizontal:'center',vertical:'middle'};fill(v,LB);
+    var l=S.getCell(r+1,c);l.value=k[1];l.font={size:13,color:{argb:'FF5A6B8C'}};l.alignment={horizontal:'center'};fill(l,LB);S.getRow(r).height=34;});
+  function img(u,col,row,lab){S.getCell(row,col+1).value=lab;S.getCell(row,col+1).font={bold:true,size:15};
+    S.addImage(wb.addImage({base64:u,extension:'png'}),{tl:{col:col,row:row},ext:{width:420,height:225}});}
+  img(C.hour,0,10,'คนขึ้นรถตามช่วงเวลา');img(C.round,4,10,'คนขึ้นรถตามรอบ');
+  img(C.veh,0,24,'คนขึ้นรถ / Trip ตามรถ');img(C.ontime,4,24,'ความตรงเวลา (เทียบตารางรอบ)');
+  var r=38;S.getCell(r,1).value='สรุปตามรอบ';S.getCell(r,1).font={bold:true,size:15};r++;
+  head(S,r,1,['รอบ','ตารางออก','ตารางถึง','Trip','คนขึ้นรถ','เดินทางเฉลี่ย','ตรงเวลา','สาย']);
+  E.rk.forEach(function(k,i){var a=E.byR[k],sc=E.SC[k]||{};body(S,++r,1,[k,sc.d||'-',sc.a||'-',a.t,a.n,mtxt(E.avg(a.tr)),a.ok,a.k-a.ok],i%2);});
+  r+=2;S.getCell(r,1).value='สรุปตามรถ';S.getCell(r,1).font={bold:true,size:15};r++;
+  head(S,r,1,['ทะเบียน','สาย','','Trip','คนขึ้นรถ','เดินทางเฉลี่ย','ตรงเวลา','สาย']);S.mergeCells(r,2,r,3);
+  Object.keys(E.byV).forEach(function(k,i){var a=E.byV[k];r++;body(S,r,1,[k,a.route,'',a.t,a.n,mtxt(E.avg(a.tr)),a.ok,a.k-a.ok],i%2);S.mergeCells(r,2,r,3);});
+  r+=2;S.getCell(r,1).value='หมายเหตุ: เวลาเดินทาง = ออกเดินทาง → ถึงจุดหมาย · รอรับคน = เริ่มรอบ → ออกเดินทาง · Trip ที่ พขร. ไม่ได้กดออกเดินทาง ใช้เวลาคนสุดท้ายขึ้นรถแทน (ประมาณ)';S.getCell(r,1).font={italic:true,size:12,color:{argb:'FF5A6B8C'}};
+  r++;S.getCell(r,1).value='Created by Nutdanai Pathsith';S.getCell(r,1).font={size:12,color:{argb:'FF5A6B8C'}};
+  fonts(S);
+
+  // Trips
+  var T=wb.addWorksheet('Trips',{views:[{state:'frozen',ySplit:1}]});
+  var th=['วันที่','ทะเบียน','สาย','รอบ','พขร.','เริ่มรอบ','ออกเดินทาง','ถึงจุดหมาย','รอรับคน (นาที)','เดินทาง (นาที)','ตารางออก','ตารางถึง','ออกเทียบตาราง (+ช้า/-เร็ว นาที)','ถึงเทียบตาราง (+ช้า/-เร็ว นาที)','ผล','สถานะ','คนขึ้นรถ','รูปออกรถ','รูปถึงจุดหมาย','TripID'];
+  T.columns=th.map(function(h,i){return {width:[13,12,14,8,20,9,11,11,11,11,9,9,10,10,14,11,9,12,14,16][i]};});
+  head(T,1,1,th);
+  E.rows.forEach(function(o,i){var x=o.x,c=o.c,rr=i+2;
+    body(T,rr,1,[x.date,x.plate,o.route,x.round,x.driver,x.time,x.departTime||(c.est?c.dep+' (ประมาณ)':''),x.arrTime||'',c.wait,c.travel,c.sd,c.sa,c.depLate,c.arrLate,c.res,stTxt(x),o.bs.length,
+      x.startPhoto?{text:'เปิดรูป',hyperlink:x.startPhoto}:'',x.arrPhoto?{text:'เปิดรูป',hyperlink:x.arrPhoto}:'',x.id],i%2);
+    var rc=T.getRow(rr).getCell(15);rc.font={bold:true,color:{argb:c.onTime===true?GR:c.onTime===false?RD:'FF5A6B8C'}};
+    [18,19].forEach(function(k){if(T.getRow(rr).getCell(k).value)T.getRow(rr).getCell(k).font={color:{argb:'FF2563D8'},underline:true};});});
+  T.autoFilter={from:{row:1,column:1},to:{row:1,column:th.length}};fonts(T);
+
+  // Boardings
+  var B=wb.addWorksheet('Boardings',{views:[{state:'frozen',ySplit:1}]});
+  var bh=['วันที่','ทะเบียน','รอบ','พขร.','ลำดับ','เวลาขึ้นรถ','รหัสพนักงาน','ชื่อ','TripID'];
+  B.columns=bh.map(function(h,i){return {width:[12,12,8,20,7,10,14,26,16][i]};});head(B,1,1,bh);
+  var br=2;E.rows.forEach(function(o){o.bs.forEach(function(b,i){body(B,br,1,[o.x.date,o.x.plate,o.x.round,o.x.driver,i+1,b.time,b.emp,b.name,o.x.id],br%2);br++;});});
+  B.autoFilter={from:{row:1,column:1},to:{row:1,column:bh.length}};fonts(B);
+
+  // one sheet per trip
+  if($('xsheets').checked){
+    E.rows.slice(0,60).forEach(function(o,n){var x=o.x,c=o.c;
+      var nm=((n+1)+'_'+x.plate+'_'+x.date.slice(5)+'_'+String(x.time).replace(':','')).replace(/[\\\/\?\*\[\]:]/g,'-').slice(0,31);
+      var W=wb.addWorksheet(nm,{views:[{showGridLines:false}]});W.columns=[{width:7},{width:12},{width:16},{width:30}];
+      title(W,4,'Trip '+(n+1)+' · '+x.plate,x.date+' · รอบ'+x.round+' · '+x.driver);
+      var info=[['เริ่มรอบ',x.time],['ออกเดินทาง',x.departTime||(c.est?c.dep+' (ประมาณ)':'-')],['ถึงจุดหมาย',x.arrTime||'-'],['เวลาเดินทาง',mtxt(c.travel)],['ตาราง',(c.sd||'-')+' → '+(c.sa||'-')],['ผล',c.res]];
+      info.forEach(function(p,i){var rr=4+i;W.mergeCells(rr,1,rr,2);W.getCell(rr,1).value=p[0];W.getCell(rr,1).font={bold:true};fill(W.getCell(rr,1),LB);W.mergeCells(rr,3,rr,4);W.getCell(rr,3).value=p[1];});
+      head(W,11,1,['#','เวลา','รหัสพนักงาน','ชื่อ']);o.bs.forEach(function(b,i){body(W,12+i,1,[i+1,b.time,b.emp,b.name],i%2);});fonts(W);});
+    if(E.rows.length>60)toast('แยกชีตได้สูงสุด 60 Trip แรก');
+  }
+  return wb.xlsx.writeBuffer().then(function(buf){var a=document.createElement('a');a.href=URL.createObjectURL(new Blob([buf],{type:'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'}));a.download=xfname('xlsx');document.body.appendChild(a);a.click();a.remove();});
+}
+
+// shared print shell for the PDF reports
+function pdfShell(title,inner){
+  return '<!doctype html><html lang="th"><head><meta charset="utf-8"><title>'+esc(title)+'</title>'
+  +'<link href="https://fonts.googleapis.com/css2?family=Sarabun:wght@400;600;700&display=swap" rel="stylesheet"><style>'
+  +'@page{size:A4;margin:8mm 0}*{box-sizing:border-box;-webkit-print-color-adjust:exact;print-color-adjust:exact}'
+  +'body{margin:0;font-family:"TH Sarabun New","Sarabun",sans-serif;font-size:16pt;color:#14284B;background:#e9edf3}'
+  +'.pg{width:210mm;margin:0 auto 8mm;background:#fff;display:flex;flex-direction:column;page-break-after:always;break-after:page}.pg:last-child{page-break-after:auto;break-after:auto}tr{break-inside:avoid}thead{display:table-header-group}'
+  +'.hd{background:linear-gradient(135deg,#2B6BE6,#1239A0);color:#fff;padding:9mm 13mm;display:flex;justify-content:space-between;align-items:center}'
+  +'.hd h1{margin:0;font-size:26pt;line-height:1.1}.hd p{margin:1mm 0 0;font-size:15pt;opacity:.92}.hd img{height:12mm;background:#fff;border-radius:2mm;padding:1.5mm 3mm}'
+  +'.bd{padding:7mm 13mm;flex:1;display:flex;flex-direction:column;gap:5mm}'
+  +'.k{display:grid;grid-template-columns:repeat(4,1fr);gap:3mm}.k div{background:#E4F0FF;border-radius:3mm;padding:2.5mm 4mm}.k b{display:block;font-size:24pt;line-height:1.1;color:#1D4DB5}.k .r b{color:#D32F2F}.k .g b{color:#1F9D63}.k span{font-size:13pt}'
+  +'h2{margin:0 0 2mm;font-size:17pt;border-left:1.5mm solid #D32F2F;padding-left:3mm}'
+  +'.g2{display:grid;grid-template-columns:1fr 1fr;gap:5mm}.g2 img{width:100%;border:1px solid #D5DCE8;border-radius:2mm}'
+  +'table{width:100%;border-collapse:collapse;font-size:14pt}th{background:#1D4DB5;color:#fff;text-align:left;padding:1.2mm 2.5mm;font-weight:600}td{padding:1mm 2.5mm;border-bottom:1px solid #E1E6EF}tr:nth-child(even) td{background:#F3F8FF}'
+  +'.ok{color:#1F9D63;font-weight:700}.late{color:#D32F2F;font-weight:700}.mut{color:#5A6B8C}'
+  +'.ft{padding:3mm 13mm;border-top:1px solid #D5DCE8;display:flex;justify-content:space-between;font-size:12pt;color:#5A6B8C}'
+  +'.inf{display:grid;grid-template-columns:repeat(4,1fr);gap:2mm 5mm;background:#E4F0FF;border-radius:3mm;padding:3mm 5mm}.inf span{display:block;font-size:12pt;color:#5A6B8C}.inf b{font-size:16pt}'
+  +'.ph{display:grid;grid-template-columns:1fr 1fr;gap:5mm}.ph div{font-weight:700;font-size:14pt}.ph img{width:100%;height:60mm;object-fit:cover;border-radius:2mm;border:1px solid #D5DCE8;display:block;margin-top:1mm}'
+  +'.ph .no{height:60mm;border:1.5px dashed #9AB3E0;border-radius:2mm;display:flex;align-items:center;justify-content:center;color:#5A6B8C;font-weight:400;margin-top:1mm}'
+  +'.bar{position:fixed;top:0;left:0;right:0;background:#14284B;color:#fff;padding:8px 16px;font-family:sans-serif;font-size:14px;display:flex;gap:12px;align-items:center;z-index:9}.bar button{padding:6px 16px;border:0;border-radius:6px;background:#2563D8;color:#fff;font-size:14px;cursor:pointer}'
+  +'@media screen{body{padding-top:50px}.pg{min-height:281mm}}@media print{.bar{display:none}body{background:#fff}.pg{margin:0}}'
+  +'</style></head><body><div class="bar"><b>'+esc(title)+'</b><span>กด "พิมพ์" แล้วเลือก "บันทึกเป็น PDF" · กระดาษ A4 · เปิด "กราฟิกพื้นหลัง"</span><button onclick="print()">พิมพ์ / บันทึก PDF</button></div>'
+  +inner+'<script>document.fonts&&document.fonts.ready.then(function(){setTimeout(function(){print();},500);});<\/script></body></html>';
+}
+function pdfHead(t1,t2){return '<div class="hd"><div><h1>'+esc(t1)+'</h1><p>'+esc(t2)+'</p></div>'+(LOGO_SRC?'<img src="'+LOGO_SRC+'">':'')+'</div>';}
+function pdfFoot(extra){return '<div class="ft"><span>Bus Checker · CDC</span><span>Created by Nutdanai Pathsith</span><span>'+esc(extra||('พิมพ์เมื่อ '+new Date().toLocaleString('th-TH',{timeZone:'Asia/Bangkok'})))+'</span></div>';}
+function resCls(c){return c.onTime===true?'ok':c.onTime===false?'late':'mut';}
+
+function pdfSummary(){
+  var E=xd(),C=charts(E,520,280),K=E.K;
+  var p1='<div class="pg">'+pdfHead('รายงานการเดินรถรับ-ส่งพนักงาน','CDC Staff Shuttle · '+E.f+' ถึง '+E.t+' · '+E.plate)+'<div class="bd">'
+   +'<div class="k"><div><b>'+K.trips+'</b><span>Trip ทั้งหมด</span></div><div><b>'+K.boards+'</b><span>คนขึ้นรถรวม</span></div><div><b>'+K.vehs+'</b><span>รถที่วิ่ง</span></div><div><b>'+K.per+'</b><span>เฉลี่ยคน/Trip</span></div>'
+   +'<div class="r"><b>'+(K.travel==null?'-':K.travel+' นาที')+'</b><span>เวลาเดินทางเฉลี่ย</span></div><div><b>'+(K.wait==null?'-':K.wait+' นาที')+'</b><span>รอรับคนเฉลี่ย</span></div><div class="g"><b>'+K.ontime+'</b><span>ถึงตรงเวลา (±'+TOL+' นาที)</span></div><div><b>'+K.closed+'</b><span>Trip ที่ปิดครบ</span></div></div>'
+   +'<div class="g2"><div><h2>คนขึ้นรถตามช่วงเวลา</h2><img src="'+C.hour+'"></div><div><h2>ความตรงเวลา</h2><img src="'+C.ontime+'"></div><div><h2>คนขึ้นรถตามรอบ</h2><img src="'+C.round+'"></div><div><h2>คนขึ้นรถ / Trip ตามรถ</h2><img src="'+C.veh+'"></div></div>'
+   +'</div>'+pdfFoot()+'</div>';
+  var rt='<table><tr><th>รอบ</th><th>ตาราง</th><th>Trip</th><th>คน</th><th>เดินทางเฉลี่ย</th><th>ตรงเวลา</th><th>สาย</th></tr>'+E.rk.map(function(k){var a=E.byR[k],sc=E.SC[k]||{};return '<tr><td>'+esc(k)+'</td><td>'+esc((sc.d||'-')+' → '+(sc.a||'-'))+'</td><td>'+a.t+'</td><td>'+a.n+'</td><td>'+mtxt(E.avg(a.tr))+'</td><td class="ok">'+a.ok+'</td><td class="late">'+(a.k-a.ok)+'</td></tr>';}).join('')+'</table>';
+  var vt='<table><tr><th>ทะเบียน</th><th>สาย</th><th>Trip</th><th>คน</th><th>เดินทางเฉลี่ย</th><th>ตรงเวลา</th><th>สาย</th></tr>'+Object.keys(E.byV).map(function(k){var a=E.byV[k];return '<tr><td>'+esc(k)+'</td><td>'+esc(a.route)+'</td><td>'+a.t+'</td><td>'+a.n+'</td><td>'+mtxt(E.avg(a.tr))+'</td><td class="ok">'+a.ok+'</td><td class="late">'+(a.k-a.ok)+'</td></tr>';}).join('')+'</table>';
+  var trs=E.rows.map(function(o){var x=o.x,c=o.c;return '<tr><td>'+esc(x.date.slice(5))+'</td><td>'+esc(x.plate)+'</td><td>'+esc(x.round)+'</td><td>'+esc(x.driver)+'</td><td>'+esc(x.time)+'</td><td>'+esc(x.departTime||(c.est?c.dep+'*':'-'))+'</td><td>'+esc(x.arrTime||'-')+'</td><td>'+(c.travel==null?'-':c.travel)+'</td><td>'+o.bs.length+'</td><td class="'+resCls(c)+'">'+esc(c.res)+'</td></tr>';});
+  var thd='<thead><tr><th>วันที่</th><th>ทะเบียน</th><th>รอบ</th><th>พขร.</th><th>เริ่ม</th><th>ออก</th><th>ถึง</th><th>นาที</th><th>คน</th><th>ผล</th></tr></thead>';
+  var pages=[];
+  pages.push('<div class="pg">'+pdfHead('สรุปตามรอบ / รถ และรายการ Trip',E.f+' ถึง '+E.t+' · '+E.plate)+'<div class="bd"><div><h2>สรุปตามรอบ</h2>'+rt+'</div><div><h2>สรุปตามรถ</h2>'+vt+'</div><div><h2>รายการ Trip</h2><table>'+thd+'<tbody>'+trs.join('')+'</tbody></table></div>'
+    +'<div class="mut" style="font-size:12pt">* ไม่ได้กดออกเดินทาง ใช้เวลาคนสุดท้ายขึ้นรถแทน (ประมาณ) · ตรงเวลา = ถึงไม่ช้ากว่าตารางเกิน '+TOL+' นาที</div></div>'+pdfFoot()+'</div>');
+  return Promise.resolve(pdfShell('รายงานสรุป '+E.f+'_'+E.t,p1+pages.join('')));
+}
+
+function fetchPhotos(ids){
+  var out={},q=ids.filter(function(x,i){return x&&ids.indexOf(x)===i;}),done=0;
+  function one(){var id=q.shift();if(!id)return Promise.resolve();
+    return getA({action:'admin_photo',id:id}).then(function(r){if(r.ok)out[id]=r.data;}).catch(function(){}).then(function(){done++;$('xprog').textContent='กำลังโหลดรูป '+done+'/'+(done+q.length);return one();});}
+  return Promise.all([one(),one(),one(),one()]).then(function(){return out;});
+}
+function pdfTrips(){
+  var E=xd(),wantPh=$('xphoto').checked,ids=[];
+  if(wantPh)E.rows.forEach(function(o){ids.push(o.x.startPhotoId,o.x.arrPhotoId);});
+  return (wantPh?fetchPhotos(ids):Promise.resolve({})).then(function(PH){
+    function ph(id,lab,tm){return '<div>'+lab+' <span class="mut" style="font-weight:400">'+esc(tm||'')+'</span>'+(PH[id]?'<img src="'+PH[id]+'">':'<div class="no">'+(wantPh?'ไม่มีรูป':'ไม่ได้เลือกใส่รูป')+'</div>')+'</div>';}
+    var pg=[];E.rows.forEach(function(o,n){var x=o.x,c=o.c,bs=o.bs;
+      var inf='<div class="inf"><div><span>ทะเบียนรถ</span><b style="color:#1D4DB5">'+esc(x.plate)+'</b></div><div><span>สาย</span><b>'+esc(o.route||'-')+'</b></div><div><span>รอบ</span><b>'+esc(x.round)+'</b></div><div><span>พนักงานขับรถ</span><b>'+esc(x.driver)+'</b></div>'
+        +'<div><span>เริ่มรอบ</span><b>'+esc(x.date)+' '+esc(x.time)+'</b></div><div><span>ออกเดินทาง</span><b>'+esc(x.departTime||(c.est?c.dep+' (ประมาณ)':'-'))+'</b></div><div><span>ถึงจุดหมาย</span><b>'+esc(x.arrTime||'-')+'</b></div><div><span>รอรับคน / เดินทาง</span><b>'+mtxt(c.wait)+' / '+mtxt(c.travel)+'</b></div>'
+        +'<div><span>ตารางออก → ถึง</span><b>'+esc((c.sd||'-')+' → '+(c.sa||'-'))+'</b></div><div><span>ออกเทียบตาราง</span><b>'+late(c.depLate)+'</b></div><div><span>ถึงเทียบตาราง</span><b>'+late(c.arrLate)+'</b></div><div><span>ผล</span><b class="'+resCls(c)+'">'+esc(c.res)+'</b></div></div>';
+      function tbl(a){return '<table><thead><tr><th style="width:12mm">#</th><th style="width:25mm">เวลา</th><th style="width:45mm">รหัสพนักงาน</th><th>ชื่อ</th></tr></thead><tbody>'+a.map(function(b,i){return '<tr><td>'+(i+1)+'</td><td>'+esc(b.time)+'</td><td>'+esc(b.emp)+'</td><td>'+esc(b.name)+'</td></tr>';}).join('')+'</tbody></table>';}
+      var t2='Trip '+(n+1)+' / '+E.rows.length+' · '+x.date;
+      pg.push('<div class="pg">'+pdfHead('ใบรายงานการเดินรถรายรอบ',t2)+'<div class="bd">'+inf
+        +'<div class="ph">'+ph(x.startPhotoId,'รูปออกรถ',x.time)+ph(x.arrPhotoId,'รูปถึงจุดหมาย',x.arrTime)+'</div>'
+        +'<div style="display:flex;justify-content:space-between;align-items:baseline"><h2>รายชื่อคนขึ้นรถ</h2><span><b style="color:#D32F2F;font-size:20pt">'+bs.length+'</b> คน</span></div>'
+        +(bs.length?tbl(bs):'<div class="mut">ไม่มีคนขึ้นรถ</div>')+'</div>'+pdfFoot()+'</div>');});
+    if(!pg.length)pg.push('<div class="pg">'+pdfHead('ใบรายงานการเดินรถรายรอบ','ไม่มีข้อมูล')+'<div class="bd"></div>'+pdfFoot()+'</div>');
+    return pdfShell('ใบรายงานรายรอบ '+E.f+'_'+E.t,pg.join(''));
+  });
+}
+
 
 // ---- vehicles ----
 function isY(v){return String(v).toUpperCase()==='Y';}
@@ -403,12 +630,13 @@ function printQR(id){
 // ---- settings ----
 function loadSettings(){
   getA({action:'admin_rounds'}).then(function(r){if(!r.ok)return;RNDS=r.rows;
-    $('rtab').innerHTML='<tr><th>รอบ</th><th>สถานะ</th><th></th></tr>'+r.rows.map(function(x){var a=isY(x.v[3]);return '<tr><td><b>'+esc(x.v[1])+'</b></td><td>'+(a?'<span class="bd o">ใช้งาน</span>':'<span class="bd r">ปิด</span>')+'</td><td><button class="btn small ghost" onclick="tog(\'ROUNDS\',\''+esc(x.v[0])+'\','+(!a)+')">'+(a?'ปิด':'เปิด')+'</button> <button class="btn small danger" onclick="del(\'ROUNDS\',\''+esc(x.v[0])+'\',\''+esc(x.v[1])+'\')">ลบ</button></td></tr>';}).join('');});
+    $('rtab').innerHTML='<tr><th>รอบ</th><th>ตาราง ออก → ถึง</th><th>สถานะ</th><th></th></tr>'+r.rows.map(function(x){var a=isY(x.v[3]),id=esc(x.v[0]);return '<tr><td><b>'+esc(x.v[1])+'</b></td><td><div class="sch"><input type="time" id="sd_'+id+'" value="'+esc(x.v[5]||'')+'"> → <input type="time" id="sa_'+id+'" value="'+esc(x.v[6]||'')+'"><button class="btn small" onclick="saveSched(\''+id+'\')">บันทึก</button></div></td><td>'+(a?'<span class="bd o">ใช้งาน</span>':'<span class="bd r">ปิด</span>')+'</td><td><button class="btn small ghost" onclick="tog(\'ROUNDS\',\''+esc(x.v[0])+'\','+(!a)+')">'+(a?'ปิด':'เปิด')+'</button> <button class="btn small danger" onclick="del(\'ROUNDS\',\''+esc(x.v[0])+'\',\''+esc(x.v[1])+'\')">ลบ</button></td></tr>';}).join('');});
   getA({action:'admin_employees'}).then(function(r){if(!r.ok)return;EMPS=r.rows;renderEmp();});
 }
 function renderEmp(){var q=g('esearch').toLowerCase();
   $('etab').innerHTML='<tr><th>รหัส</th><th>ชื่อ</th><th>หน้าที่</th><th></th></tr>'+EMPS.filter(function(x){return !q||(x.v[0]+x.v[1]).toLowerCase().indexOf(q)>=0;}).slice(0,200).map(function(x){var a=isY(x.v[3]);
     return '<tr><td>'+esc(x.v[0])+'</td><td>'+esc(x.v[1])+'</td><td>'+(x.v[2]==='DRIVER'?'พขร.':'พนักงาน')+'</td><td><button class="btn small ghost" onclick="tog(\'EMPLOYEES\',\''+esc(x.v[0])+'\','+(!a)+')">'+(a?'ปิด':'เปิด')+'</button> <button class="btn small danger" onclick="del(\'EMPLOYEES\',\''+esc(x.v[0])+'\',\''+esc(x.v[1]||x.v[0])+'\')">ลบ</button></td></tr>';}).join('');}
+function saveSched(id){post({action:'updateRound',id:id,depart:$('sd_'+id).value,arrive:$('sa_'+id).value}).then(function(r){if(!r.ok){toast(r.error);return;}toast('บันทึกเวลาตารางแล้ว');RNDS=[];loadSettings();});}
 function addRound(){var n=g('rname');if(!n)return;post({action:'addRound',roundName:n}).then(function(r){if(!r.ok){toast(r.error);return;}$('rname').value='';loadSettings();toast('เพิ่มรอบแล้ว');});}
 function addEmp(){var id=g('eid');if(!id){toast('กรอกรหัส');return;}post({action:'addEmployee',employeeId:id,name:g('ename'),role:$('erole').value}).then(function(r){if(!r.ok){toast(r.error);return;}['eid','ename'].forEach(function(k){$(k).value='';});loadSettings();toast('เพิ่มแล้ว');});}
 

@@ -96,12 +96,16 @@ input[type=text]:focus,input[type=password]:focus{border-color:var(--brand2);box
 
  <div id="openBox" class="hidden">
   <div class="run fadein"><div style="display:flex;align-items:center;gap:6px;font-size:15px"><span class="live"></span><span data-i="running"></span></div><div class="chips" id="chips" style="margin:8px 0 0"></div><div class="road"></div></div>
-  <div class="card fadein" style="animation-delay:.1s">
+  <div id="depBox" class="hidden">
+   <div class="card fadein" style="animation-delay:.1s;text-align:center"><div style="font-size:16px" data-i="depHint"></div></div>
+   <button class="big green" id="bDep" onclick="depart()" data-i="departBtn"></button>
+  </div>
+  <div id="arrBox" class="hidden"><div class="card fadein" style="animation-delay:.1s">
    <label class="f" style="margin-top:0" data-i="photo2"></label>
    <button class="photobtn" id="pb2" onclick="$('f2').click()"><img id="pv2" class="hidden"><span id="pt2" data-i="tap"></span></button>
    <input type="file" id="f2" accept="image/*" capture="environment" class="hidden" onchange="pic(this,2)">
   </div>
-  <button class="big orange" id="bArr" onclick="arrive()" data-i="arriveBtn"></button>
+  <button class="big orange" id="bArr" onclick="arrive()" data-i="arriveBtn"></button></div>
   <p style="text-align:center"><a class="lnk" onclick="newTrip()" data-i="newTrip"></a></p>
  </div>
  <div id="err" class="err hidden"></div>
@@ -152,11 +156,11 @@ var LOGO='<div class="logo"><img src="data:image/png;base64,iVBORw0KGgoAAAANSUhE
 function langsHtml(cls){return '<div class="langs '+(cls||'')+'"><button data-l="th" onclick="setLang(\'th\')">ไทย</button><button data-l="en" onclick="setLang(\'en\')">EN</button><button data-l="my" onclick="setLang(\'my\')">မြန်မာ</button></div>';}
 function headerHtml(titleKey){return '<a class="back" href="index.html">← <span data-i="back"></span></a><h1 data-i="'+titleKey+'"></h1>'+LOGO+langsHtml('sub');}
 </script><script>window.PAGE_DICT={
-th:{title:'พนักงานขับรถ',running:'กำลังวิ่งอยู่',tap:'แตะเพื่อถ่ายรูป',taken:'ถ่ายรูปแล้ว ✓',name:'ชื่อ พขร.',namePh:'พิมพ์ชื่อของคุณ',round:'รอบรถ',photo1:'ถ่ายรูปตัวคุณคู่กับรถ',photo2:'ถ่ายรูปที่จุดส่ง (CDC)',take:'ถ่ายรูป',startBtn:'▶ เริ่มรอบวิ่ง',arriveBtn:'🏁 ถึงจุดหมายแล้ว',newTrip:'เริ่มรอบใหม่ (แทนรอบเดิม)',change:'เปลี่ยนรถ',need:'กรุณากรอกชื่อ เลือกรอบ และถ่ายรูปให้ครบ',needPhoto:'กรุณาถ่ายรูป',okStart:'เริ่มรอบวิ่งแล้ว',okArr:'บันทึกถึงจุดหมายแล้ว',okBtn:'เสร็จสิ้น',roundL:'รอบ',driverL:'พขร.',startL:'ออกเวลา',notFound:'ไม่พบรถคันนี้ในระบบ',noRound:'ยังไม่มีรอบ ให้แอดมินเพิ่มรอบก่อน',sending:'กำลังส่ง...'},
-en:{title:'Driver',running:'On the road',tap:'Tap to take a photo',taken:'Photo taken ✓',name:'Driver name',namePh:'Type your name',round:'Round',photo1:'Photo of you with the bus',photo2:'Photo at the drop-off (CDC)',take:'Take photo',startBtn:'▶ Start trip',arriveBtn:'🏁 Arrived',newTrip:'Start a new trip (replace current)',change:'Change bus',need:'Please enter name, pick a round and take the photo',needPhoto:'Please take a photo',okStart:'Trip started',okArr:'Arrival recorded',okBtn:'Done',roundL:'Round',driverL:'Driver',startL:'Departed',notFound:'Bus not found',noRound:'No rounds yet. Ask admin to add rounds.',sending:'Sending...'},
-my:{title:'ယာဉ်မောင်း',running:'မောင်းနေသည်',tap:'ဓာတ်ပုံရိုက်ရန် နှိပ်ပါ',taken:'ရိုက်ပြီး ✓',name:'ယာဉ်မောင်းအမည်',namePh:'သင့်အမည်ရိုက်ပါ',round:'အချိန်ပိုင်း',photo1:'ကားနှင့်အတူ သင့်ဓာတ်ပုံ',photo2:'ရောက်ရှိရာနေရာ (CDC) ဓာတ်ပုံ',take:'ဓာတ်ပုံရိုက်',startBtn:'▶ ခရီးစဉ်စတင်',arriveBtn:'🏁 ရောက်ပါပြီ',newTrip:'ခရီးစဉ်အသစ်စတင် (အဟောင်းအစား)',change:'ကားပြောင်းမည်',need:'အမည်၊ အချိန်ပိုင်းနှင့် ဓာတ်ပုံ ပြည့်စုံစွာထည့်ပါ',needPhoto:'ဓာတ်ပုံရိုက်ပါ',okStart:'ခရီးစဉ်စတင်ပြီး',okArr:'ရောက်ရှိမှု မှတ်တမ်းတင်ပြီး',okBtn:'ပြီးပြီ',roundL:'အချိန်ပိုင်း',driverL:'ယာဉ်မောင်း',startL:'ထွက်ခွာချိန်',notFound:'ကားမတွေ့ပါ',noRound:'အချိန်ပိုင်းမရှိသေးပါ',sending:'ပို့နေသည်...'}};
+th:{title:'พนักงานขับรถ',running:'กำลังวิ่งอยู่',tap:'แตะเพื่อถ่ายรูป',taken:'ถ่ายรูปแล้ว ✓',name:'ชื่อ พขร.',namePh:'พิมพ์ชื่อของคุณ',round:'รอบรถ',photo1:'ถ่ายรูปตัวคุณคู่กับรถ',photo2:'ถ่ายรูปที่จุดส่ง (CDC)',take:'ถ่ายรูป',startBtn:'▶ เริ่มรอบวิ่ง',arriveBtn:'🏁 ถึงจุดหมายแล้ว',newTrip:'เริ่มรอบใหม่ (แทนรอบเดิม)',change:'เปลี่ยนรถ',need:'กรุณากรอกชื่อ เลือกรอบ และถ่ายรูปให้ครบ',needPhoto:'กรุณาถ่ายรูป',okStart:'เริ่มรอบวิ่งแล้ว',okArr:'บันทึกถึงจุดหมายแล้ว',okBtn:'เสร็จสิ้น',roundL:'รอบ',driverL:'พขร.',startL:'เริ่มรอบ',departBtn:'🚌 ออกเดินทาง',depHint:'รับพนักงานครบแล้ว กด ออกเดินทาง ตอนรถเริ่มออก',okDep:'บันทึกเวลาออกเดินทางแล้ว',depL:'ออกเดินทาง',schedL:'ตาราง',notFound:'ไม่พบรถคันนี้ในระบบ',noRound:'ยังไม่มีรอบ ให้แอดมินเพิ่มรอบก่อน',sending:'กำลังส่ง...'},
+en:{title:'Driver',running:'On the road',tap:'Tap to take a photo',taken:'Photo taken ✓',name:'Driver name',namePh:'Type your name',round:'Round',photo1:'Photo of you with the bus',photo2:'Photo at the drop-off (CDC)',take:'Take photo',startBtn:'▶ Start trip',arriveBtn:'🏁 Arrived',newTrip:'Start a new trip (replace current)',change:'Change bus',need:'Please enter name, pick a round and take the photo',needPhoto:'Please take a photo',okStart:'Trip started',okArr:'Arrival recorded',okBtn:'Done',roundL:'Round',driverL:'Driver',startL:'Started',departBtn:'🚌 Depart now',depHint:'All passengers on board? Tap Depart when the bus leaves.',okDep:'Departure recorded',depL:'Departed',schedL:'Schedule',notFound:'Bus not found',noRound:'No rounds yet. Ask admin to add rounds.',sending:'Sending...'},
+my:{title:'ယာဉ်မောင်း',running:'မောင်းနေသည်',tap:'ဓာတ်ပုံရိုက်ရန် နှိပ်ပါ',taken:'ရိုက်ပြီး ✓',name:'ယာဉ်မောင်းအမည်',namePh:'သင့်အမည်ရိုက်ပါ',round:'အချိန်ပိုင်း',photo1:'ကားနှင့်အတူ သင့်ဓာတ်ပုံ',photo2:'ရောက်ရှိရာနေရာ (CDC) ဓာတ်ပုံ',take:'ဓာတ်ပုံရိုက်',startBtn:'▶ ခရီးစဉ်စတင်',arriveBtn:'🏁 ရောက်ပါပြီ',newTrip:'ခရီးစဉ်အသစ်စတင် (အဟောင်းအစား)',change:'ကားပြောင်းမည်',need:'အမည်၊ အချိန်ပိုင်းနှင့် ဓာတ်ပုံ ပြည့်စုံစွာထည့်ပါ',needPhoto:'ဓာတ်ပုံရိုက်ပါ',okStart:'ခရီးစဉ်စတင်ပြီး',okArr:'ရောက်ရှိမှု မှတ်တမ်းတင်ပြီး',okBtn:'ပြီးပြီ',roundL:'အချိန်ပိုင်း',driverL:'ယာဉ်မောင်း',startL:'စတင်ချိန်',departBtn:'🚌 ထွက်ခွာမည်',depHint:'ခရီးသည်အားလုံးတက်ပြီးပါက ကားထွက်ချိန်တွင် နှိပ်ပါ',okDep:'ထွက်ခွာချိန် မှတ်တမ်းတင်ပြီး',depL:'ထွက်ခွာ',schedL:'အချိန်ဇယား',notFound:'ကားမတွေ့ပါ',noRound:'အချိန်ပိုင်းမရှိသေးပါ',sending:'ပို့နေသည်...'}};
 $('hd').innerHTML=headerHtml('title');
-var VID=qs('v'),INFO=null,ROUNDS=[],ROUND='',P1=null,P2=null,FORCE=false;
+var VID=qs('v'),INFO=null,ROUNDS=[],ROUND='',P1=null,P2=null,FORCE=false,SCHED={};
 function onLang(){if(INFO)render();}
 function err(m){var e=$('err');e.textContent=m;e.classList.remove('hidden');}
 function pickVeh(v){location.href='driver.html?v='+encodeURIComponent(v);}
@@ -166,7 +170,11 @@ function render(){
   $('plate').textContent=INFO.plate||INFO.vehicleId;$('route').textContent=INFO.route||'';
   var open=INFO.openTrip&&!FORCE;
   $('openBox').classList.toggle('hidden',!open);$('startForm').classList.toggle('hidden',!!open);
-  if(open){$('chips').innerHTML='<span class="chip">'+t('roundL')+': '+esc(INFO.openTrip.roundName)+'</span><span class="chip">'+t('driverL')+': '+esc(INFO.openTrip.driverName)+'</span><span class="chip">'+t('startL')+' '+esc(INFO.openTrip.startTime)+'</span>';}
+  if(open){var o=INFO.openTrip,sc=SCHED[o.roundName]||{};
+    $('chips').innerHTML='<span class="chip">'+t('roundL')+': '+esc(o.roundName)+'</span><span class="chip">'+t('driverL')+': '+esc(o.driverName)+'</span><span class="chip">'+t('startL')+' '+esc(o.startTime)+'</span>'
+      +(o.departTime?'<span class="chip red">'+t('depL')+' '+esc(o.departTime)+'</span>':'')
+      +(sc.depart||sc.arrive?'<span class="chip">'+t('schedL')+' '+esc(sc.depart||'-')+' → '+esc(sc.arrive||'-')+'</span>':'');
+    $('depBox').classList.toggle('hidden',!!o.departTime);$('arrBox').classList.toggle('hidden',!o.departTime);}
   else renderRounds();
 }
 function newTrip(){FORCE=true;render();}
@@ -180,6 +188,15 @@ function startTrip(){
     try{localStorage.setItem('bc_drv',n);}catch(x){}
     showOk(t('okStart'),[INFO.plate,t('roundL')+': '+ROUND,n],t('okBtn'),function(){location.reload();},true);
   }).catch(function(){$('bStart').disabled=false;$('bStart').textContent=t('startBtn');err(t('errNet'));});
+}
+function depart(){
+  $('err').classList.add('hidden');$('bDep').disabled=true;$('bDep').textContent=t('sending');
+  apiPost({action:'depart',vehicleId:VID}).then(function(r){
+    $('bDep').disabled=false;$('bDep').textContent=t('departBtn');
+    if(!r.ok){err(r.error||'error');return;}
+    INFO.openTrip.departTime=r.departTime;
+    showOk(t('okDep'),[INFO.plate,t('depL')+' '+r.departTime],t('okBtn'),function(){render();},true);
+  }).catch(function(){$('bDep').disabled=false;$('bDep').textContent=t('departBtn');err(t('errNet'));});
 }
 function arrive(){
   if(!P2){err(t('needPhoto'));return;}
@@ -195,7 +212,7 @@ if(VID){
   Promise.all([apiGet({action:'vehicle',v:VID}),apiGet({action:'meta'})]).then(function(a){
     $('spin').classList.add('hidden');
     if(!a[0].ok){$('pick').classList.remove('hidden');toast(a[0].error||t('notFound'));loadList();return;}
-    INFO=a[0];ROUNDS=a[1].rounds||[];$('car').classList.remove('hidden');
+    INFO=a[0];ROUNDS=a[1].rounds||[];SCHED=a[1].schedule||{};$('car').classList.remove('hidden');
     try{$('dname').value=localStorage.getItem('bc_drv')||'';}catch(x){}
     render();
   }).catch(function(){$('spin').textContent=t('errNet');});
