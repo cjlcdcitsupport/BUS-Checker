@@ -482,7 +482,7 @@ function excelPack(){
   S.columns=[1,2,3,4,5,6,7,8].map(function(){return {width:14};});
   title(S,8,'รายงานการเดินรถรับ-ส่งพนักงาน CDC',sub);
   var KP=[[E.K.trips,'จำนวน Trip',BL],[E.K.boards,'คนขึ้นรถรวม',BL],[E.K.vehs,'รถที่วิ่ง',BL],[E.K.per,'เฉลี่ยคน/Trip',BL],
-    [E.K.travel==null?'-':E.K.travel+' นาที','เวลาเดินทางเฉลี่ย',RD],[E.K.wait==null?'-':E.K.wait+' นาที','รอรับคนเฉลี่ย',BL],[E.K.ontime,'ถึงตรงเวลา (±'+TOL+' นาที)',GR],[E.K.closed,'Trip ที่ปิดครบ',BL]];
+    [E.K.ontime,'ถึงตรงเวลา (±'+TOL+' นาที)',GR],[E.K.closed,'Trip ที่ปิดครบ',BL]];
   KP.forEach(function(k,i){var r=4+Math.floor(i/4)*3,c=1+(i%4)*2;S.mergeCells(r,c,r,c+1);S.mergeCells(r+1,c,r+1,c+1);
     var v=S.getCell(r,c);v.value=k[0];v.font={bold:true,size:24,color:{argb:k[2]}};v.alignment={horizontal:'center',vertical:'middle'};fill(v,LB);
     var l=S.getCell(r+1,c);l.value=k[1];l.font={size:13,color:{argb:'FF5A6B8C'}};l.alignment={horizontal:'center'};fill(l,LB);S.getRow(r).height=34;});
@@ -491,25 +491,25 @@ function excelPack(){
   img(C.hour,0,10,'คนขึ้นรถตามช่วงเวลา');img(C.round,4,10,'คนขึ้นรถตามรอบ');
   img(C.veh,0,24,'คนขึ้นรถ / Trip ตามรถ');img(C.ontime,4,24,'ความตรงเวลา (เทียบตารางรอบ)');
   var r=38;S.getCell(r,1).value='สรุปตามรอบ';S.getCell(r,1).font={bold:true,size:15};r++;
-  head(S,r,1,['รอบ','ตารางออก','ตารางถึง','Trip','คนขึ้นรถ','เดินทางเฉลี่ย','ตรงเวลา','สาย']);
-  E.rk.forEach(function(k,i){var a=E.byR[k],sc=E.SC[k]||{};body(S,++r,1,[k,sc.d||'-',sc.a||'-',a.t,a.n,mtxt(E.avg(a.tr)),a.ok,a.k-a.ok],i%2);});
+  head(S,r,1,['รอบ','ตารางถึง','Trip','คนขึ้นรถ','ตรงเวลา','สาย']);
+  E.rk.forEach(function(k,i){var a=E.byR[k],sc=E.SC[k]||{};body(S,++r,1,[k,sc.a||'-',a.t,a.n,a.ok,a.k-a.ok],i%2);});
   r+=2;S.getCell(r,1).value='สรุปตามรถ';S.getCell(r,1).font={bold:true,size:15};r++;
-  head(S,r,1,['ทะเบียน','สาย','','Trip','คนขึ้นรถ','เดินทางเฉลี่ย','ตรงเวลา','สาย']);S.mergeCells(r,2,r,3);
-  Object.keys(E.byV).forEach(function(k,i){var a=E.byV[k];r++;body(S,r,1,[k,a.route,'',a.t,a.n,mtxt(E.avg(a.tr)),a.ok,a.k-a.ok],i%2);S.mergeCells(r,2,r,3);});
-  r+=2;S.getCell(r,1).value='หมายเหตุ: เวลาเดินทาง = ออกเดินทาง → ถึงจุดหมาย · รอรับคน = เริ่มรอบ → ออกเดินทาง · Trip ที่ พขร. ไม่ได้กดออกเดินทาง ใช้เวลาคนสุดท้ายขึ้นรถแทน (ประมาณ)';S.getCell(r,1).font={italic:true,size:12,color:{argb:'FF5A6B8C'}};
+  head(S,r,1,['ทะเบียน','สาย','','Trip','คนขึ้นรถ','ตรงเวลา','สาย']);S.mergeCells(r,2,r,3);
+  Object.keys(E.byV).forEach(function(k,i){var a=E.byV[k];r++;body(S,r,1,[k,a.route,'',a.t,a.n,a.ok,a.k-a.ok],i%2);S.mergeCells(r,2,r,3);});
+  r+=2;S.getCell(r,1).value='หมายเหตุ: ตรงเวลา = ถึงจุดหมายไม่ช้ากว่าตารางถึงเกิน '+TOL+' นาที';S.getCell(r,1).font={italic:true,size:12,color:{argb:'FF5A6B8C'}};
   r++;S.getCell(r,1).value='Created by Nutdanai Pathsith';S.getCell(r,1).font={size:12,color:{argb:'FF5A6B8C'}};
   fonts(S);
 
   // Trips
   var T=wb.addWorksheet('Trips',{views:[{state:'frozen',ySplit:1}]});
-  var th=['วันที่','ทะเบียน','สาย','รอบ','พขร.','เริ่มรอบ','ออกเดินทาง','ถึงจุดหมาย','รอรับคน (นาที)','เดินทาง (นาที)','ตารางออก','ตารางถึง','ออกเทียบตาราง (+ช้า/-เร็ว นาที)','ถึงเทียบตาราง (+ช้า/-เร็ว นาที)','ผล','สถานะ','คนขึ้นรถ','รูปออกรถ','รูปถึงจุดหมาย','TripID'];
-  T.columns=th.map(function(h,i){return {width:[13,12,14,8,20,9,11,11,11,11,9,9,10,10,14,11,9,12,14,16][i]};});
+  var th=['วันที่','ทะเบียน','สาย','รอบ','พขร.','เริ่มรอบ','ถึงจุดหมาย','ตารางถึง','ถึงเทียบตาราง (+ช้า/-เร็ว นาที)','ผล','สถานะ','คนขึ้นรถ','รูปออกรถ','รูปถึงจุดหมาย','TripID'];
+  T.columns=th.map(function(h,i){return {width:[13,12,14,8,20,9,11,9,10,14,11,9,12,14,16][i]};});
   head(T,1,1,th);
   E.rows.forEach(function(o,i){var x=o.x,c=o.c,rr=i+2;
-    body(T,rr,1,[x.date,x.plate,o.route,x.round,x.driver,x.time,x.departTime||(c.est?c.dep+' (ประมาณ)':''),x.arrTime||'',c.wait,c.travel,c.sd,c.sa,c.depLate,c.arrLate,c.res,stTxt(x),o.bs.length,
+    body(T,rr,1,[x.date,x.plate,o.route,x.round,x.driver,x.time,x.arrTime||'',c.sa,c.arrLate,c.res,stTxt(x),o.bs.length,
       x.startPhoto?{text:'เปิดรูป',hyperlink:x.startPhoto}:'',x.arrPhoto?{text:'เปิดรูป',hyperlink:x.arrPhoto}:'',x.id],i%2);
-    var rc=T.getRow(rr).getCell(15);rc.font={bold:true,color:{argb:c.onTime===true?GR:c.onTime===false?RD:'FF5A6B8C'}};
-    [18,19].forEach(function(k){if(T.getRow(rr).getCell(k).value)T.getRow(rr).getCell(k).font={color:{argb:'FF2563D8'},underline:true};});});
+    var rc=T.getRow(rr).getCell(10);rc.font={bold:true,color:{argb:c.onTime===true?GR:c.onTime===false?RD:'FF5A6B8C'}};
+    [13,14].forEach(function(k){if(T.getRow(rr).getCell(k).value)T.getRow(rr).getCell(k).font={color:{argb:'FF2563D8'},underline:true};});});
   T.autoFilter={from:{row:1,column:1},to:{row:1,column:th.length}};fonts(T);
 
   // Boardings
@@ -525,7 +525,7 @@ function excelPack(){
       var nm=((n+1)+'_'+x.plate+'_'+x.date.slice(5)+'_'+String(x.time).replace(':','')).replace(/[\\\/\?\*\[\]:]/g,'-').slice(0,31);
       var W=wb.addWorksheet(nm,{views:[{showGridLines:false}]});W.columns=[{width:7},{width:12},{width:16},{width:30}];
       title(W,4,'Trip '+(n+1)+' · '+x.plate,x.date+' · รอบ'+x.round+' · '+x.driver);
-      var info=[['เริ่มรอบ',x.time],['ออกเดินทาง',x.departTime||(c.est?c.dep+' (ประมาณ)':'-')],['ถึงจุดหมาย',x.arrTime||'-'],['เวลาเดินทาง',mtxt(c.travel)],['ตาราง',(c.sd||'-')+' → '+(c.sa||'-')],['ผล',c.res]];
+      var info=[['เริ่มรอบ',x.time],['ถึงจุดหมาย',x.arrTime||'-'],['ตารางถึง',c.sa||'-'],['ผล',c.res]];
       info.forEach(function(p,i){var rr=4+i;W.mergeCells(rr,1,rr,2);W.getCell(rr,1).value=p[0];W.getCell(rr,1).font={bold:true};fill(W.getCell(rr,1),LB);W.mergeCells(rr,3,rr,4);W.getCell(rr,3).value=p[1];});
       head(W,11,1,['#','เวลา','รหัสพนักงาน','ชื่อ']);o.bs.forEach(function(b,i){body(W,12+i,1,[i+1,b.time,b.emp,b.name],i%2);});fonts(W);});
     if(E.rows.length>60)toast('แยกชีตได้สูงสุด 60 Trip แรก');
@@ -565,16 +565,16 @@ function pdfSummary(){
   var E=xd(),C=charts(E,520,280),K=E.K;
   var p1='<div class="pg">'+pdfHead('รายงานการเดินรถรับ-ส่งพนักงาน','CDC Staff Shuttle · '+E.f+' ถึง '+E.t+' · '+E.plate)+'<div class="bd">'
    +'<div class="k"><div><b>'+K.trips+'</b><span>Trip ทั้งหมด</span></div><div><b>'+K.boards+'</b><span>คนขึ้นรถรวม</span></div><div><b>'+K.vehs+'</b><span>รถที่วิ่ง</span></div><div><b>'+K.per+'</b><span>เฉลี่ยคน/Trip</span></div>'
-   +'<div class="r"><b>'+(K.travel==null?'-':K.travel+' นาที')+'</b><span>เวลาเดินทางเฉลี่ย</span></div><div><b>'+(K.wait==null?'-':K.wait+' นาที')+'</b><span>รอรับคนเฉลี่ย</span></div><div class="g"><b>'+K.ontime+'</b><span>ถึงตรงเวลา (±'+TOL+' นาที)</span></div><div><b>'+K.closed+'</b><span>Trip ที่ปิดครบ</span></div></div>'
+   +'<div class="g"><b>'+K.ontime+'</b><span>ถึงตรงเวลา (±'+TOL+' นาที)</span></div><div><b>'+K.closed+'</b><span>Trip ที่ปิดครบ</span></div></div>'
    +'<div class="g2"><div><h2>คนขึ้นรถตามช่วงเวลา</h2><img src="'+C.hour+'"></div><div><h2>ความตรงเวลา</h2><img src="'+C.ontime+'"></div><div><h2>คนขึ้นรถตามรอบ</h2><img src="'+C.round+'"></div><div><h2>คนขึ้นรถ / Trip ตามรถ</h2><img src="'+C.veh+'"></div></div>'
    +'</div>'+pdfFoot()+'</div>';
-  var rt='<table><tr><th>รอบ</th><th>ตาราง</th><th>Trip</th><th>คน</th><th>เดินทางเฉลี่ย</th><th>ตรงเวลา</th><th>สาย</th></tr>'+E.rk.map(function(k){var a=E.byR[k],sc=E.SC[k]||{};return '<tr><td>'+esc(k)+'</td><td>'+esc((sc.d||'-')+' → '+(sc.a||'-'))+'</td><td>'+a.t+'</td><td>'+a.n+'</td><td>'+mtxt(E.avg(a.tr))+'</td><td class="ok">'+a.ok+'</td><td class="late">'+(a.k-a.ok)+'</td></tr>';}).join('')+'</table>';
-  var vt='<table><tr><th>ทะเบียน</th><th>สาย</th><th>Trip</th><th>คน</th><th>เดินทางเฉลี่ย</th><th>ตรงเวลา</th><th>สาย</th></tr>'+Object.keys(E.byV).map(function(k){var a=E.byV[k];return '<tr><td>'+esc(k)+'</td><td>'+esc(a.route)+'</td><td>'+a.t+'</td><td>'+a.n+'</td><td>'+mtxt(E.avg(a.tr))+'</td><td class="ok">'+a.ok+'</td><td class="late">'+(a.k-a.ok)+'</td></tr>';}).join('')+'</table>';
-  var trs=E.rows.map(function(o){var x=o.x,c=o.c;return '<tr><td>'+esc(x.date.slice(5))+'</td><td>'+esc(x.plate)+'</td><td>'+esc(x.round)+'</td><td>'+esc(x.driver)+'</td><td>'+esc(x.time)+'</td><td>'+esc(x.departTime||(c.est?c.dep+'*':'-'))+'</td><td>'+esc(x.arrTime||'-')+'</td><td>'+(c.travel==null?'-':c.travel)+'</td><td>'+o.bs.length+'</td><td class="'+resCls(c)+'">'+esc(c.res)+'</td></tr>';});
-  var thd='<thead><tr><th>วันที่</th><th>ทะเบียน</th><th>รอบ</th><th>พขร.</th><th>เริ่ม</th><th>ออก</th><th>ถึง</th><th>นาที</th><th>คน</th><th>ผล</th></tr></thead>';
+  var rt='<table><tr><th>รอบ</th><th>ตารางถึง</th><th>Trip</th><th>คน</th><th>ตรงเวลา</th><th>สาย</th></tr>'+E.rk.map(function(k){var a=E.byR[k],sc=E.SC[k]||{};return '<tr><td>'+esc(k)+'</td><td>'+esc(sc.a||'-')+'</td><td>'+a.t+'</td><td>'+a.n+'</td><td class="ok">'+a.ok+'</td><td class="late">'+(a.k-a.ok)+'</td></tr>';}).join('')+'</table>';
+  var vt='<table><tr><th>ทะเบียน</th><th>สาย</th><th>Trip</th><th>คน</th><th>ตรงเวลา</th><th>สาย</th></tr>'+Object.keys(E.byV).map(function(k){var a=E.byV[k];return '<tr><td>'+esc(k)+'</td><td>'+esc(a.route)+'</td><td>'+a.t+'</td><td>'+a.n+'</td><td class="ok">'+a.ok+'</td><td class="late">'+(a.k-a.ok)+'</td></tr>';}).join('')+'</table>';
+  var trs=E.rows.map(function(o){var x=o.x,c=o.c;return '<tr><td>'+esc(x.date.slice(5))+'</td><td>'+esc(x.plate)+'</td><td>'+esc(x.round)+'</td><td>'+esc(x.driver)+'</td><td>'+esc(x.time)+'</td><td>'+esc(x.arrTime||'-')+'</td><td>'+o.bs.length+'</td><td class="'+resCls(c)+'">'+esc(c.res)+'</td></tr>';});
+  var thd='<thead><tr><th>วันที่</th><th>ทะเบียน</th><th>รอบ</th><th>พขร.</th><th>เริ่ม</th><th>ถึง</th><th>คน</th><th>ผล</th></tr></thead>';
   var pages=[];
   pages.push('<div class="pg">'+pdfHead('สรุปตามรอบ / รถ และรายการ Trip',E.f+' ถึง '+E.t+' · '+E.plate)+'<div class="bd"><div><h2>สรุปตามรอบ</h2>'+rt+'</div><div><h2>สรุปตามรถ</h2>'+vt+'</div><div><h2>รายการ Trip</h2><table>'+thd+'<tbody>'+trs.join('')+'</tbody></table></div>'
-    +'<div class="mut" style="font-size:12pt">* ไม่ได้กดออกเดินทาง ใช้เวลาคนสุดท้ายขึ้นรถแทน (ประมาณ) · ตรงเวลา = ถึงไม่ช้ากว่าตารางเกิน '+TOL+' นาที</div></div>'+pdfFoot()+'</div>');
+    +'<div class="mut" style="font-size:12pt">ตรงเวลา = ถึงจุดหมายไม่ช้ากว่าตารางถึงเกิน '+TOL+' นาที</div></div>'+pdfFoot()+'</div>');
   return Promise.resolve(pdfShell('รายงานสรุป '+E.f+'_'+E.t,p1+pages.join('')));
 }
 
@@ -591,8 +591,8 @@ function pdfTrips(){
     function ph(id,lab,tm){return '<div>'+lab+' <span class="mut" style="font-weight:400">'+esc(tm||'')+'</span>'+(PH[id]?'<img src="'+PH[id]+'">':'<div class="no">'+(wantPh?'ไม่มีรูป':'ไม่ได้เลือกใส่รูป')+'</div>')+'</div>';}
     var pg=[];E.rows.forEach(function(o,n){var x=o.x,c=o.c,bs=o.bs;
       var inf='<div class="inf"><div><span>ทะเบียนรถ</span><b style="color:#1D4DB5">'+esc(x.plate)+'</b></div><div><span>สาย</span><b>'+esc(o.route||'-')+'</b></div><div><span>รอบ</span><b>'+esc(x.round)+'</b></div><div><span>พนักงานขับรถ</span><b>'+esc(x.driver)+'</b></div>'
-        +'<div><span>เริ่มรอบ</span><b>'+esc(x.date)+' '+esc(x.time)+'</b></div><div><span>ออกเดินทาง</span><b>'+esc(x.departTime||(c.est?c.dep+' (ประมาณ)':'-'))+'</b></div><div><span>ถึงจุดหมาย</span><b>'+esc(x.arrTime||'-')+'</b></div><div><span>รอรับคน / เดินทาง</span><b>'+mtxt(c.wait)+' / '+mtxt(c.travel)+'</b></div>'
-        +'<div><span>ตารางออก → ถึง</span><b>'+esc((c.sd||'-')+' → '+(c.sa||'-'))+'</b></div><div><span>ออกเทียบตาราง</span><b>'+late(c.depLate)+'</b></div><div><span>ถึงเทียบตาราง</span><b>'+late(c.arrLate)+'</b></div><div><span>ผล</span><b class="'+resCls(c)+'">'+esc(c.res)+'</b></div></div>';
+        +'<div><span>เริ่มรอบ</span><b>'+esc(x.date)+' '+esc(x.time)+'</b></div><div><span>ถึงจุดหมาย</span><b>'+esc(x.arrTime||'-')+'</b></div>'
+        +'<div><span>ตารางถึง</span><b>'+esc(c.sa||'-')+'</b></div><div><span>ผล</span><b class="'+resCls(c)+'">'+esc(c.res)+'</b></div></div>';
       function tbl(a){return '<table><thead><tr><th style="width:12mm">#</th><th style="width:25mm">เวลา</th><th style="width:45mm">รหัสพนักงาน</th><th>ชื่อ</th></tr></thead><tbody>'+a.map(function(b,i){return '<tr><td>'+(i+1)+'</td><td>'+esc(b.time)+'</td><td>'+esc(b.emp)+'</td><td>'+esc(b.name)+'</td></tr>';}).join('')+'</tbody></table>';}
       var t2='Trip '+(n+1)+' / '+E.rows.length+' · '+x.date;
       pg.push('<div class="pg">'+pdfHead('ใบรายงานการเดินรถรายรอบ',t2)+'<div class="bd">'+inf
